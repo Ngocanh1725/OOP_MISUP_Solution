@@ -2,15 +2,16 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using MISUP.Models.Entities;
-using MISUP.Models.Interfaces;
+using MISUP.Models;
+using MISUP.BLL.Services;
 
 namespace MISUP.WinForms
 {
     public partial class ucSanPham : UserControl
     {
-        // Khởi tạo DatabaseHelper thông qua Interface để đảm bảo Tính Trừu Tượng
-        IQuanLyHangHoa db = new DatabaseHelper();
+        // Khởi tạo BLL (Business Logic Layer) thay vì gọi thẳng DAL/DatabaseHelper
+        private HangHoaBLL db = new HangHoaBLL();
+
         ComboBox cmbLocLoai;
         Label lblThongKe;
 

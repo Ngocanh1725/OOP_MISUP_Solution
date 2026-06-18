@@ -1,17 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
-		<UseWindowsForms>true</UseWindowsForms>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<!-- ĐÃ XÓA SẠCH THƯ VIỆN SQLCLIENT: GIAO DIỆN KHÔNG ĐƯỢC CHỨA SQL -->
-
+	<!-- ÉP CÀI ĐẶT THƯ VIỆN GIAO DIỆN TERMINAL V1.19 -->
 	<ItemGroup>
-		<!-- Giao diện chỉ được phép nhìn thấy BLL và Models -->
+		<PackageReference Include="Terminal.Gui" Version="1.19.0" />
+	</ItemGroup>
+
+	<!-- LIÊN KẾT ĐÚNG CHUẨN 3-TIER -->
+	<ItemGroup>
 		<ProjectReference Include="..\MISUP.BLL\MISUP.BLL.csproj" />
 		<ProjectReference Include="..\MISUP.Models\MISUP.Models.csproj" />
 	</ItemGroup>

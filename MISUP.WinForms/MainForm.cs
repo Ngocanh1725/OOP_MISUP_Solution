@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using MISUP.Models.Entities;
+using MISUP.Models;
 
 namespace MISUP.WinForms
 {

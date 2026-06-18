@@ -1,21 +1,22 @@
 ﻿using MISUP.BLL.Services;
 using MISUP.Models;
-using MISUP.Models.Entities;
-using NStack;
+using NStack; // BẮT BUỘC: NStack chứa kiểu ustring mà Terminal.Gui sử dụng
 using System;
 using Terminal.Gui;
-// DÒNG QUAN TRỌNG NHẤT ĐỂ SỬA LỖI AMBIGUOUS:
-// Ép buộc C# hiểu "Application" là của Terminal.Gui
+
+// BẮT BUỘC: Ép buộc C# hiểu "Application" là của Terminal.Gui để tránh CS0104
 using Application = Terminal.Gui.Application;
 
 namespace MISUP.ConsoleApp
 {
+    // Kế thừa từ Dialog của Terminal.Gui
     public class AddProductDialog : Dialog
     {
         private HangHoaBLL _db;
         private bool _isEdit;
         public bool IsSaved { get; private set; } = false;
 
+        // Constructor phải gọi base với tham số đầu tiên ép kiểu về (ustring)
         public AddProductDialog(HangHoaBLL db, HangHoa sp = null)
             : base((ustring)(sp == null ? "Thêm Sản Phẩm" : "Sửa Sản Phẩm"), 60, 20)
         {
