@@ -1,23 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NStack;
-using Terminal.Gui;
+﻿using MISUP.BLL.Services;
 using MISUP.Models;
+using MISUP.Models.Entities;
+using NStack;
+using System;
+using Terminal.Gui;
+// DÒNG QUAN TRỌNG NHẤT ĐỂ SỬA LỖI AMBIGUOUS:
+// Ép buộc C# hiểu "Application" là của Terminal.Gui
+using Application = Terminal.Gui.Application;
+
 namespace MISUP.ConsoleApp
-{// Lớp là một khuôn mẫu (bản thiết kế) định nghĩa các đặc điểm
- // và hành vi chung cho một nhóm các thực thể.
+{
     public class AddProductDialog : Dialog
     {
-        private IQuanLyHangHoa _db;
+        private HangHoaBLL _db;
         private bool _isEdit;
         public bool IsSaved { get; private set; } = false;
 
-        public AddProductDialog(IQuanLyHangHoa db, HangHoa sp = null) : base(sp == null ? "Thêm Sản Phẩm" : "Sửa Sản Phẩm", 60, 20)
+        public AddProductDialog(HangHoaBLL db, HangHoa sp = null)
+            : base((ustring)(sp == null ? "Thêm Sản Phẩm" : "Sửa Sản Phẩm"), 60, 20)
         {
-            _db = db; _isEdit = sp != null; this.ColorScheme = ThemeManager.HackerScheme;
+            _db = db;
+            _isEdit = sp != null;
+            this.ColorScheme = ThemeManager.HackerScheme;
 
             var txtMa = new TextField(_isEdit ? sp.MaHang : "") { X = 15, Y = 2, Width = 35, ReadOnly = _isEdit, ColorScheme = ThemeManager.InputScheme };
             var txtTen = new TextField(_isEdit ? sp.TenHang : "") { X = 15, Y = 4, Width = 35, ColorScheme = ThemeManager.InputScheme };
@@ -43,14 +47,28 @@ namespace MISUP.ConsoleApp
         {
             try
             {
-                int sl = int.Parse(slText); decimal gia = decimal.Parse(giaText);
-                HangHoa h = loaiIndex switch { 0 => new HangThucPham(ma, ten, nsx, sl, gia), 1 => new HangDienTu(ma, ten, nsx, sl, gia), 2 => new HangMyPham(ma, ten, nsx, sl, gia), 3 => new HangGiaDung(ma, ten, nsx, sl, gia), 4 => new HangThoiTrang(ma, ten, nsx, sl, gia), _ => null };
+                int sl = int.Parse(slText);
+                decimal gia = decimal.Parse(giaText);
+
+                HangHoa h = loaiIndex switch
+                {
+                    0 => new HangThucPham(ma, ten, nsx, sl, gia),
+                    1 => new HangDienTu(ma, ten, nsx, sl, gia),
+                    2 => new HangMyPham(ma, ten, nsx, sl, gia),
+                    3 => new HangGiaDung(ma, ten, nsx, sl, gia),
+                    4 => new HangThoiTrang(ma, ten, nsx, sl, gia),
+                    _ => null
+                };
 
                 if (_isEdit) _db.SuaHang(h); else _db.NhapHang(h, loaiIndex switch { 0 => "ThucPham", 1 => "DienTu", 2 => "MyPham", 3 => "GiaDung", 4 => "ThoiTrang", _ => "ThucPham" });
 
-                IsSaved = true; Application.RequestStop();
+                IsSaved = true;
+                Application.RequestStop();
             }
-            catch (Exception ex) { MessageBox.ErrorQuery("Lỗi", ex.Message, "OK"); }
+            catch (Exception ex)
+            {
+                MessageBox.ErrorQuery("Lỗi", ex.Message, "OK");
+            }
         }
     }
 }

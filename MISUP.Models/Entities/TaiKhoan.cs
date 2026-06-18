@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MISUP.Models
 {
+    // Đã đưa về đúng namespace gốc: MISUP.Models
     public class TaiKhoan
     {
         public string TenDangNhap { get; set; }
@@ -15,7 +16,10 @@ namespace MISUP.Models
 
         public TaiKhoan(string tenDangNhap, string matKhau, string hoTen, string quyen)
         {
-            TenDangNhap = tenDangNhap; MatKhau = matKhau; HoTen = hoTen; Quyen = quyen;
+            TenDangNhap = tenDangNhap;
+            MatKhau = matKhau;
+            HoTen = hoTen;
+            Quyen = quyen;
         }
     }
 }

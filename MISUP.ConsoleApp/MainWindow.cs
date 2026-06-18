@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using NStack;
-using Terminal.Gui;
+﻿using MISUP.BLL.Services; // Gọi BLL
 using MISUP.Models;
 using System;
+using System.Collections.Generic;
+using System.Data;
+using Terminal.Gui;
 
 namespace MISUP.ConsoleApp
 {
     public class MainWindow
     {
-        private IQuanLyHangHoa _db;
+        private HangHoaBLL _db = new HangHoaBLL(); // Dùng BLL thay cho DatabaseHelper
         private TaiKhoan _user;
         private TableView _tableView;
 
-        public MainWindow(TaiKhoan user, IQuanLyHangHoa db) { _user = user; _db = db; }
+        public MainWindow(TaiKhoan user) { _user = user; }
 
         public void Run()
         {
@@ -81,7 +81,10 @@ namespace MISUP.ConsoleApp
         {
             if (_tableView.SelectedRow < 0) return;
             string ma = _tableView.Table.Rows[_tableView.SelectedRow][0].ToString();
-            if (MessageBox.Query("Xác nhận", $"Xóa SP {ma}?", "Có", "Quay lại") == 0) { _db.XoaHang(ma); RefreshData(); }
+            if (MessageBox.Query("Xác nhận", $"Xóa SP {ma}?", "Có", "Quay lại") == 0)
+            {
+                try { _db.XoaHang(ma); RefreshData(); } catch (Exception ex) { MessageBox.ErrorQuery("Lỗi", ex.Message, "OK"); }
+            }
         }
 
         private void EditSelectedProduct()
@@ -92,7 +95,7 @@ namespace MISUP.ConsoleApp
             int sl = Convert.ToInt32(_tableView.Table.Rows[_tableView.SelectedRow][3]);
             decimal gia = Convert.ToDecimal(_tableView.Table.Rows[_tableView.SelectedRow][4].ToString().Replace(",", ""));
 
-            HangHoa sp = loai switch { "Thực Phẩm" => new HangThucPham(ma, ten, nsx, sl, gia), "Điện Tử" => new HangDienTu(ma, ten, nsx, sl, gia), "Mỹ Phẩm" => new HangMyPham(ma, ten, nsx, sl, gia), "Gia Dụng" => new HangGiaDung(ma, ten, nsx, sl, gia), "Thời Trang" => new HangThoiTrang(ma, ten, nsx, sl, gia), _ => null };
+            HangHoa sp = loai switch { "Thực Phẩm" => new HangThucPham(ma, ten, nsx, sl, gia), "Điện Tử" => new HangDienTu(ma, ten, nsx, sl, gia), "Mỹ Phẩm" => new HangMyPham(ma, ten, nsx, sl, gia), "GiaDung" => new HangGiaDung(ma, ten, nsx, sl, gia), "Thời Trang" => new HangThoiTrang(ma, ten, nsx, sl, gia), _ => null };
             ShowProductDialog(sp);
         }
 
