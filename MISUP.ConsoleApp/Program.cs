@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using NStack;
 using Terminal.Gui;
 using MISUP.Models;
+
+// DÒNG NÀY ĐỂ FIX LỖI AMBIGUOUS (XUNG ĐỘT TÊN)
+using Application = Terminal.Gui.Application;
 
 namespace MISUP.ConsoleApp
 {
@@ -13,19 +13,22 @@ namespace MISUP.ConsoleApp
         {
             Application.Init();
             ThemeManager.Initialize();
-            IQuanLyHangHoa db = new DatabaseHelper();
 
             while (true)
             {
-                var loginDialog = new LoginDialog(db);
+                // ĐÃ SỬA: Không truyền (db) vào nữa vì LoginDialog đã dùng AuthBLL bên trong
+                var loginDialog = new LoginDialog();
                 Application.Run(loginDialog);
-                if (loginDialog.AuthenticatedUser == null) break;
 
-                var mainWindow = new MainWindow(loginDialog.AuthenticatedUser, db);
+                if (loginDialog.AuthenticatedUser == null)
+                    break;
+
+                // ĐÃ SỬA: MainWindow giờ cũng chỉ cần truyền 'user', không truyền (db) nữa
+                var mainWindow = new MainWindow(loginDialog.AuthenticatedUser);
                 mainWindow.Run();
             }
+
             Application.Shutdown();
         }
     }
 }
-

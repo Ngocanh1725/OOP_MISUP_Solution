@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NStack;
-using Terminal.Gui;
+﻿using MISUP.BLL.Services; // Gọi BLL
 using MISUP.Models;
+using System;
+using Terminal.Gui;
 
 namespace MISUP.ConsoleApp
 {
     public class LoginDialog : Dialog
     {
-        private IQuanLyHangHoa _db;
+        private AuthBLL _authBLL = new AuthBLL();
         public TaiKhoan AuthenticatedUser { get; private set; } = null;
 
-        public LoginDialog(IQuanLyHangHoa db) : base("HỆ THỐNG QUẢN LÝ KHO SIÊU THỊ MISUP - ĐĂNG NHẬP", 65, 12)
+        public LoginDialog() : base("HỆ THỐNG QUẢN LÝ KHO SIÊU THỊ MISUP - ĐĂNG NHẬP", 65, 12)
         {
-            _db = db; this.ColorScheme = ThemeManager.HackerScheme;
+            this.ColorScheme = ThemeManager.HackerScheme;
 
             var txtUser = new TextField("") { X = 18, Y = 2, Width = 40, ColorScheme = ThemeManager.InputScheme };
             var txtPass = new TextField("") { X = 18, Y = 4, Width = 40, Secret = true, ColorScheme = ThemeManager.InputScheme };
@@ -34,11 +30,15 @@ namespace MISUP.ConsoleApp
 
         private void ProcessLogin(string username, string password)
         {
-            if (_db is DatabaseHelper helper)
+            try
             {
-                var user = helper.KiemTraDangNhap(username, password);
+                var user = _authBLL.Login(username, password);
                 if (user != null) { AuthenticatedUser = user; Application.RequestStop(); }
                 else MessageBox.ErrorQuery("Lỗi", "Tài khoản hoặc mật khẩu sai!", "OK");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.ErrorQuery("Lỗi nghiệp vụ", ex.Message, "OK");
             }
         }
     }

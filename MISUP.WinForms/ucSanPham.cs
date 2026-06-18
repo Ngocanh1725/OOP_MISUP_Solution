@@ -2,7 +2,8 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using MISUP.Models;
+using MISUP.Models.Entities;
+using MISUP.Models.Interfaces;
 
 namespace MISUP.WinForms
 {

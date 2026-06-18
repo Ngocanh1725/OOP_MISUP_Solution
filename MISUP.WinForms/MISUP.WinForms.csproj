@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
-  </ItemGroup>
+	<!-- ĐÃ XÓA SẠCH THƯ VIỆN SQLCLIENT: GIAO DIỆN KHÔNG ĐƯỢC CHỨA SQL -->
 
-  <ItemGroup>
-    <ProjectReference Include="..\MISUP.Models\MISUP.Models.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<!-- Giao diện chỉ được phép nhìn thấy BLL và Models -->
+		<ProjectReference Include="..\MISUP.BLL\MISUP.BLL.csproj" />
+		<ProjectReference Include="..\MISUP.Models\MISUP.Models.csproj" />
+	</ItemGroup>
 
 </Project>

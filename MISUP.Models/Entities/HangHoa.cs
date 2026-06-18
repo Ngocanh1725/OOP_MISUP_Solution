@@ -55,7 +55,7 @@ namespace MISUP.Models
         // Hàm chung: Tổng giá trị = (Số lượng * Đơn giá) + Thuế VAT
         public decimal TinhTongGiaTriSauThue()
         {
-            return (SoLuongNhap * DonGia) + TinhThueVAT();
+            return SoLuongNhap * DonGia + TinhThueVAT();
         }
     }
 

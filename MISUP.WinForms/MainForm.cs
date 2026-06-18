@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using MISUP.Models;
+using MISUP.Models.Entities;
+
 namespace MISUP.WinForms
 {
     public partial class MainForm : Form
