@@ -1,7 +1,7 @@
-﻿using System;
-using Terminal.Gui;
+﻿using MISUP.ConsoleApp.Dialogs;
 using MISUP.Models;
-
+using System;
+using Terminal.Gui;
 // DÒNG NÀY ĐỂ FIX LỖI AMBIGUOUS (XUNG ĐỘT TÊN)
 using Application = Terminal.Gui.Application;
 
@@ -16,14 +16,12 @@ namespace MISUP.ConsoleApp
 
             while (true)
             {
-                // ĐÃ SỬA: Không truyền (db) vào nữa vì LoginDialog đã dùng AuthBLL bên trong
                 var loginDialog = new LoginDialog();
                 Application.Run(loginDialog);
 
                 if (loginDialog.AuthenticatedUser == null)
                     break;
 
-                // ĐÃ SỬA: MainWindow giờ cũng chỉ cần truyền 'user', không truyền (db) nữa
                 var mainWindow = new MainWindow(loginDialog.AuthenticatedUser);
                 mainWindow.Run();
             }

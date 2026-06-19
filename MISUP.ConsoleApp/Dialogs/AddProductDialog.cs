@@ -1,13 +1,13 @@
 ﻿using MISUP.BLL.Services;
 using MISUP.Models;
-using NStack; // BẮT BUỘC: NStack chứa kiểu ustring mà Terminal.Gui sử dụng
+using NStack; 
 using System;
 using Terminal.Gui;
-
-// BẮT BUỘC: Ép buộc C# hiểu "Application" là của Terminal.Gui để tránh CS0104
 using Application = Terminal.Gui.Application;
 
-namespace MISUP.ConsoleApp
+
+
+namespace MISUP.ConsoleApp.Dialogs
 {
     // Kế thừa từ Dialog của Terminal.Gui
     public class AddProductDialog : Dialog
@@ -22,7 +22,7 @@ namespace MISUP.ConsoleApp
         {
             _db = db;
             _isEdit = sp != null;
-            this.ColorScheme = ThemeManager.HackerScheme;
+            ColorScheme = ThemeManager.HackerScheme;
 
             var txtMa = new TextField(_isEdit ? sp.MaHang : "") { X = 15, Y = 2, Width = 35, ReadOnly = _isEdit, ColorScheme = ThemeManager.InputScheme };
             var txtTen = new TextField(_isEdit ? sp.TenHang : "") { X = 15, Y = 4, Width = 35, ColorScheme = ThemeManager.InputScheme };
@@ -39,7 +39,7 @@ namespace MISUP.ConsoleApp
             btnBack.Clicked += () => Application.RequestStop();
             btnSave.Clicked += () => SaveProduct(txtMa.Text.ToString(), txtTen.Text.ToString(), txtNSX.Text.ToString(), txtSL.Text.ToString(), txtGia.Text.ToString(), radioLoai.SelectedItem);
 
-            this.Add(new Label("Mã hàng:") { X = 2, Y = 2 }, txtMa, new Label("Tên SP:") { X = 2, Y = 4 }, txtTen,
+            Add(new Label("Mã hàng:") { X = 2, Y = 2 }, txtMa, new Label("Tên SP:") { X = 2, Y = 4 }, txtTen,
                      new Label("Nhà SX:") { X = 2, Y = 6 }, txtNSX, new Label("Số lượng:") { X = 2, Y = 8 }, txtSL,
                      new Label("Đơn giá:") { X = 2, Y = 10 }, txtGia, new Label("Loại hàng:") { X = 2, Y = 12 }, radioLoai, btnSave, btnBack);
         }

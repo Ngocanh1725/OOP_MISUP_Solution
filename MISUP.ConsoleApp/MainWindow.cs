@@ -1,18 +1,21 @@
-﻿using MISUP.BLL.Services; // Gọi BLL
+﻿using MISUP.BLL.Services;
+using MISUP.ConsoleApp.Dialogs;
 using MISUP.Models;
+using NStack;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using Terminal.Gui;
-using NStack;
+using static Terminal.Gui.TableView;
 
 namespace MISUP.ConsoleApp
 {
     public class MainWindow
     {
-        private HangHoaBLL _db = new HangHoaBLL(); // Dùng BLL thay cho DatabaseHelper
+        private HangHoaBLL _db = new HangHoaBLL();
         private TaiKhoan _user;
         private TableView _tableView;
+        private StatusBar _statusBar;
 
         public MainWindow(TaiKhoan user) { _user = user; }
 
@@ -20,101 +23,110 @@ namespace MISUP.ConsoleApp
         {
             var top = new Toplevel() { ColorScheme = ThemeManager.HackerScheme };
 
+            // 1. MENU
             var menu = new MenuBar(new MenuBarItem[] {
-                new MenuBarItem ("_Hệ thống", new MenuItem [] {
-                    new MenuItem ("_Đăng xuất đổi tài khoản", "", () => { Application.RequestStop(); })
-                }),
-                new MenuBarItem ("_Hành động", new MenuItem [] {
-                    new MenuItem ("_Thêm hàng mới", "", () => ShowProductDialog(null), null, null, Key.CtrlMask | Key.I),
-                    new MenuItem ("_Sửa hàng", "", () => EditSelectedProduct(), null, null, Key.CtrlMask | Key.E),
-                    new MenuItem ("_Xóa hàng", "", () => DeleteSelectedProduct(), null, null, Key.Delete)
-                }),
-                new MenuBarItem ("_Báo cáo", new MenuItem [] {
-                    new MenuItem ("_Thống kê tổng tài sản", "", () => {
-                        MessageBox.Query("Thống Kê", $"Tổng giá trị kho: {_db.TinhTongGiaTriKho():N0} VNĐ", "OK");
-                    })
+                new MenuBarItem ("_He Thong", new MenuItem [] { new MenuItem ("_Dang Xuat", "", () => Application.RequestStop()) }),
+                new MenuBarItem ("_Chuc Nang", new MenuItem [] {
+                    new MenuItem ("_Them Moi (Ctrl+N)", "", () => ShowAddDialog(), null, null, Key.CtrlMask | Key.N),
+                    new MenuItem ("_Tim Kiem (Ctrl+F)", "", () => ShowSearchDialog(), null, null, Key.CtrlMask | Key.F)
                 })
             });
 
-            var win = new Window($"BẢNG ĐIỀU KHIỂN - Xin chào: {_user.HoTen} ({_user.Quyen})") { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() };
-            var leftPane = new FrameView("Chức năng") { X = 0, Y = 0, Width = Dim.Percent(20), Height = Dim.Fill() };
-            var rightPane = new FrameView("Dữ Liệu Kho Hàng") { X = Pos.Right(leftPane), Y = 0, Width = Dim.Fill(), Height = Dim.Fill() };
+            // 2. LAYOUT CHÍNH
+            var win = new Window($"[ MISUP ERP ] - Hien hanh: {_user.HoTen}") { X = 0, Y = 1, Width = Dim.Fill(), Height = Dim.Fill() - 1 };
+            var leftPane = new FrameView("Menu") { X = 0, Y = 0, Width = Dim.Percent(20), Height = Dim.Fill() };
+            var rightPane = new FrameView("Bang Du Lieu") { X = Pos.Right(leftPane), Y = 0, Width = Dim.Fill(), Height = Dim.Fill() };
 
-            var menuList = new ListView(new ustring[] { "1. Xem tất cả", "2. Thêm mới", "3. Sửa SP", "4. Xóa SP", "5. Tìm kiếm", "0. Đăng xuất" }) { X = 0, Y = 0, Width = Dim.Fill(), Height = Dim.Fill() };
+            var menuList = new ListView(new ustring[] { "1. Tai Lai (F5)", "2. Them Moi", "3. Sua", "4. Xoa", "5. Tim Kiem", "6. Dashboard", "0. Dang Xuat" }) { X = 0, Y = 0, Width = Dim.Fill(), Height = Dim.Fill() };
+            menuList.OpenSelectedItem += (e) => HandleMenuSelection(e.Item);
 
-            menuList.OpenSelectedItem += (e) => {
-                if (e.Item == 0) RefreshData();
-                if (e.Item == 1) ShowProductDialog(null);
-                if (e.Item == 2) EditSelectedProduct();
-                if (e.Item == 3) DeleteSelectedProduct();
-                if (e.Item == 4) SearchProduct();
-                if (e.Item == 5)
-                {
-                    if (MessageBox.Query("Xác nhận", "Bạn muốn đăng xuất?", "Đồng ý", "Hủy") == 0)
-                        Application.RequestStop();
-                }
+            // ĐÃ FIX LỖI Ở ĐÂY: Xóa AlwaysHighlightSelection
+            _tableView = new TableView()
+            {
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill(),
+                FullRowSelect = true,
+                Style = new TableStyle { ShowVerticalCellLines = true }
             };
 
-            _tableView = new TableView() { X = 0, Y = 0, Width = Dim.Fill(), Height = Dim.Fill(), FullRowSelect = true };
+            // 3. STATUS BAR
+            _statusBar = new StatusBar(new StatusItem[] {
+                new StatusItem(Key.CtrlMask | Key.Q, "~CTRL-Q~ Thoat", () => Application.RequestStop()),
+                new StatusItem(Key.F5, "~F5~ Lam Moi", () => RefreshData()),
+                new StatusItem(Key.Null, "", null)
+            });
 
-            leftPane.Add(menuList); rightPane.Add(_tableView); win.Add(leftPane, rightPane); top.Add(menu, win);
-            RefreshData(); Application.Run(top);
+            leftPane.Add(menuList); rightPane.Add(_tableView); win.Add(leftPane, rightPane);
+            top.Add(menu, win, _statusBar);
+
+            RefreshData();
+            Application.Run(top);
         }
 
-        private void RefreshData() => LoadDataToTable(_db.LayDanhSach());
-
-        private void SearchProduct()
+        // ĐIỀU HƯỚNG TỪ MENU
+        private void HandleMenuSelection(int index)
         {
-            var dialog = new Dialog("Tìm kiếm", 50, 10) { ColorScheme = ThemeManager.HackerScheme };
-            var txtTuKhoa = new TextField("") { X = 15, Y = 2, Width = 30, ColorScheme = ThemeManager.InputScheme };
-
-            var btnTim = new Button("Tìm") { X = Pos.Center() - 8, Y = 5, IsDefault = true };
-            var btnBack = new Button("Quay lại") { X = Pos.Center() + 4, Y = 5 };
-
-            btnTim.Clicked += () => { LoadDataToTable(_db.TimKiem(txtTuKhoa.Text.ToString())); Application.RequestStop(); };
-            btnBack.Clicked += () => Application.RequestStop();
-
-            dialog.Add(new Label("Từ khóa:") { X = 2, Y = 2 }, txtTuKhoa, btnTim, btnBack);
-            Application.Run(dialog);
-        }
-
-        private void DeleteSelectedProduct()
-        {
-            if (_tableView.SelectedRow < 0) return;
-            string ma = _tableView.Table.Rows[_tableView.SelectedRow][0].ToString();
-            if (MessageBox.Query("Xác nhận", $"Xóa SP {ma}?", "Có", "Quay lại") == 0)
+            switch (index)
             {
-                try { _db.XoaHang(ma); RefreshData(); } catch (Exception ex) { MessageBox.ErrorQuery("Lỗi", ex.Message, "OK"); }
+                case 0: RefreshData(); break;
+                case 1: ShowAddDialog(); break;
+                case 2: ShowEditDialog(); break;
+                case 3: DeleteSelected(); break;
+                case 4: ShowSearchDialog(); break;
+                case 5: Application.Run(new DashboardDialog(_db)); break;
+                case 6: if (MessageBox.Query("Thoat", "Ban chac chu?", "Co", "Khong") == 0) Application.RequestStop(); break;
             }
         }
 
-        private void EditSelectedProduct()
-        {
-            if (_tableView.SelectedRow < 0) return;
-            string ma = _tableView.Table.Rows[_tableView.SelectedRow][0].ToString(), ten = _tableView.Table.Rows[_tableView.SelectedRow][1].ToString();
-            string nsx = _tableView.Table.Rows[_tableView.SelectedRow][2].ToString(), loai = _tableView.Table.Rows[_tableView.SelectedRow][5].ToString();
-            int sl = Convert.ToInt32(_tableView.Table.Rows[_tableView.SelectedRow][3]);
-            decimal gia = Convert.ToDecimal(_tableView.Table.Rows[_tableView.SelectedRow][4].ToString().Replace(",", ""));
+        private void UpdateStatusBar() => _statusBar.Items[2].Title = (ustring)$"Tong SP: {_db.DemTongSoMatHang()} | Tong Tien: {_db.TinhTongGiaTriKho():N0} VND";
 
-            HangHoa sp = loai switch { "Thực Phẩm" => new HangThucPham(ma, ten, nsx, sl, gia), "Điện Tử" => new HangDienTu(ma, ten, nsx, sl, gia), "Mỹ Phẩm" => new HangMyPham(ma, ten, nsx, sl, gia), "GiaDung" => new HangGiaDung(ma, ten, nsx, sl, gia), "Thời Trang" => new HangThoiTrang(ma, ten, nsx, sl, gia), _ => null };
-            ShowProductDialog(sp);
+        private void RefreshData() { LoadDataToTable(_db.LayDanhSach()); UpdateStatusBar(); }
+
+        private void ShowSearchDialog()
+        {
+            var searchDlg = new SearchDialog();
+            Application.Run(searchDlg);
+            if (searchDlg.IsConfirmed) LoadDataToTable(_db.TimKiem(searchDlg.Keyword));
         }
 
-        private void ShowProductDialog(HangHoa sp)
+        private void ShowAddDialog()
         {
-            var dialog = new AddProductDialog(_db, sp); Application.Run(dialog);
-            if (dialog.IsSaved) RefreshData();
+            var dlg = new AddProductDialog(_db, null);
+            Application.Run(dlg);
+            if (dlg.IsSaved) RefreshData();
+        }
+
+        private void ShowEditDialog()
+        {
+            if (_tableView.SelectedRow < 0) { MessageBox.Query("Loi", "Chon 1 dong de sua!", "OK"); return; }
+            string ma = _tableView.Table.Rows[_tableView.SelectedRow][0].ToString();
+
+            HangHoa sp = _db.LayDanhSach().Find(x => x.MaHang == ma);
+            if (sp != null)
+            {
+                var dlg = new AddProductDialog(_db, sp);
+                Application.Run(dlg);
+                if (dlg.IsSaved) RefreshData();
+            }
+        }
+
+        private void DeleteSelected()
+        {
+            if (_tableView.SelectedRow < 0) { MessageBox.Query("Loi", "Chon 1 dong de xoa!", "OK"); return; }
+            string ma = _tableView.Table.Rows[_tableView.SelectedRow][0].ToString();
+            if (MessageBox.Query("Xoa", $"Xoa san pham {ma}?", "Co", "Khong") == 0)
+            {
+                try { _db.XoaHang(ma); RefreshData(); } catch (Exception ex) { MessageBox.ErrorQuery("Loi", ex.Message, "OK"); }
+            }
         }
 
         private void LoadDataToTable(List<HangHoa> list)
         {
             DataTable dt = new DataTable();
-            dt.Columns.Add("Mã"); dt.Columns.Add("Tên SP"); dt.Columns.Add("Nhà SX"); dt.Columns.Add("Số Lượng"); dt.Columns.Add("Đơn Giá"); dt.Columns.Add("Loại");
-            foreach (var item in list)
-            {
-                string loai = item switch { HangThucPham _ => "Thực Phẩm", HangDienTu _ => "Điện Tử", HangMyPham _ => "Mỹ Phẩm", HangGiaDung _ => "Gia Dụng", HangThoiTrang _ => "Thời Trang", _ => "Khác" };
-                dt.Rows.Add(item.MaHang, item.TenHang, item.NhaSanXuat, item.SoLuongNhap, item.DonGia.ToString("N0"), loai);
-            }
+            dt.Columns.Add("Ma"); dt.Columns.Add("Ten SP"); dt.Columns.Add("Nha SX"); dt.Columns.Add("So Luong"); dt.Columns.Add("Don Gia"); dt.Columns.Add("Loai");
+            foreach (var item in list) dt.Rows.Add(item.MaHang, item.TenHang, item.NhaSanXuat, item.SoLuongNhap, item.DonGia.ToString("N0"), item.GetType().Name.Replace("Hang", ""));
             _tableView.Table = dt; _tableView.Update();
         }
     }

@@ -2,8 +2,9 @@
 using MISUP.Models;
 using System;
 using Terminal.Gui;
+using Application = Terminal.Gui.Application;
 
-namespace MISUP.ConsoleApp
+namespace MISUP.ConsoleApp.Dialogs
 {
     public class LoginDialog : Dialog
     {
@@ -12,7 +13,7 @@ namespace MISUP.ConsoleApp
 
         public LoginDialog() : base("HỆ THỐNG QUẢN LÝ KHO SIÊU THỊ MISUP - ĐĂNG NHẬP", 65, 12)
         {
-            this.ColorScheme = ThemeManager.HackerScheme;
+            ColorScheme = ThemeManager.HackerScheme;
 
             var txtUser = new TextField("") { X = 18, Y = 2, Width = 40, ColorScheme = ThemeManager.InputScheme };
             var txtPass = new TextField("") { X = 18, Y = 4, Width = 40, Secret = true, ColorScheme = ThemeManager.InputScheme };
@@ -25,7 +26,7 @@ namespace MISUP.ConsoleApp
             btnRegister.Clicked += () => MessageBox.Query("Thông báo", "Vui lòng liên hệ Admin!", "OK");
             btnExit.Clicked += () => Application.RequestStop();
 
-            this.Add(new Label("Tài khoản:") { X = 5, Y = 2 }, txtUser, new Label("Mật khẩu:") { X = 5, Y = 4 }, txtPass, btnLogin, btnRegister, btnExit);
+            Add(new Label("Tài khoản:") { X = 5, Y = 2 }, txtUser, new Label("Mật khẩu:") { X = 5, Y = 4 }, txtPass, btnLogin, btnRegister, btnExit);
         }
 
         private void ProcessLogin(string username, string password)

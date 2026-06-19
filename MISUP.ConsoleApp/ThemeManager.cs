@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terminal.Gui;
+
+// DÒNG NÀY ĐỂ FIX LỖI XUNG ĐỘT TÊN ATTRIBUTE
+using Attribute = Terminal.Gui.Attribute;
 
 namespace MISUP.ConsoleApp
 {
@@ -14,10 +13,19 @@ namespace MISUP.ConsoleApp
 
         public static void Initialize()
         {
-            HackerScheme = new ColorScheme() { Normal = Application.Driver.MakeAttribute(Color.White, Color.Black), Focus = Application.Driver.MakeAttribute(Color.White, Color.Black), HotNormal = Application.Driver.MakeAttribute(Color.Cyan, Color.Black), HotFocus = Application.Driver.MakeAttribute(Color.Cyan, Color.Black) };
-            InputScheme = new ColorScheme() { Normal = Application.Driver.MakeAttribute(Color.Black, Color.Cyan), Focus = Application.Driver.MakeAttribute(Color.White, Color.DarkGray) };
+            HackerScheme = new ColorScheme()
+            {
+                Normal = new Attribute(Color.White, Color.Black),
+                Focus = new Attribute(Color.White, Color.Black),
+                HotNormal = new Attribute(Color.Cyan, Color.Black),
+                HotFocus = new Attribute(Color.Cyan, Color.Black)
+            };
+
+            InputScheme = new ColorScheme()
+            {
+                Normal = new Attribute(Color.Black, Color.Cyan),
+                Focus = new Attribute(Color.White, Color.DarkGray)
+            };
         }
     }
 }
-
-
