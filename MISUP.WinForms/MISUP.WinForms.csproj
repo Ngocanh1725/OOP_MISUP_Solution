@@ -8,6 +8,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
+	  <PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
+	</ItemGroup>
+
 	<!-- ĐÃ XÓA SẠCH THƯ VIỆN SQLCLIENT: GIAO DIỆN KHÔNG ĐƯỢC CHỨA SQL -->
 
 	<ItemGroup>

@@ -98,7 +98,6 @@ namespace MISUP.WinForms
             // ==========================================
             this.pnlHeader.BackColor = Color.Transparent;
             this.pnlHeader.Controls.Add(this.btnXuatExcel);
-            this.pnlHeader.Controls.Add(this.btnThem);
             this.pnlHeader.Controls.Add(this.lblTitle);
             this.pnlHeader.Dock = DockStyle.Top;
             this.pnlHeader.Height = 60;
@@ -109,19 +108,19 @@ namespace MISUP.WinForms
             this.lblTitle.Location = new Point(0, 10);
             this.lblTitle.Text = "Quản Lý Sản Phẩm";
 
-            // Nút Tạo Sản Phẩm (Đã chỉnh tọa độ X và Size rộng rãi)
-            this.btnThem.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            // Nút Tạo Sản Phẩm (Đã được chuyển neo và vị trí xuống Toolbar bên dưới)
+            this.btnThem.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             this.btnThem.BackColor = Color.FromArgb(0, 136, 255);
             this.btnThem.FlatAppearance.BorderSize = 0;
             this.btnThem.FlatStyle = FlatStyle.Flat;
             this.btnThem.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             this.btnThem.ForeColor = Color.White;
-            this.btnThem.Location = new Point(940, 10); // Đặt sát lề phải
-            this.btnThem.Size = new Size(120, 36);
+            this.btnThem.Location = new Point(640, 20); // Căn lề cạnh nút sắp xếp
+            this.btnThem.Size = new Size(110, 32); // Chiều cao đồng bộ với thanh Toolbar
             this.btnThem.Text = "➕ Tạo SP";
             this.btnThem.Cursor = Cursors.Hand;
 
-            // Nút Xuất File (Đã đẩy lùi ra xa nút Tạo SP để không bao giờ đè lên nhau)
+            // Nút Xuất File (Giữ nguyên trên Header)
             this.btnXuatExcel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnXuatExcel.BackColor = Color.White;
             this.btnXuatExcel.FlatAppearance.BorderColor = Color.FromArgb(226, 232, 240);
@@ -300,7 +299,7 @@ namespace MISUP.WinForms
             this.btnSua.FlatAppearance.BorderSize = 0;
             this.btnSua.Text = "✏️ Sửa";
             this.btnSua.Size = new Size(90, 32);
-            this.btnSua.Location = new Point(640, 20);
+            this.btnSua.Location = new Point(760, 20); // Đẩy lùi sang phải nhường chỗ cho nút Tạo
             this.btnSua.Cursor = Cursors.Hand;
             this.btnSua.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
 
@@ -310,11 +309,12 @@ namespace MISUP.WinForms
             this.btnXoa.FlatAppearance.BorderSize = 0;
             this.btnXoa.Text = "🗑️ Xóa";
             this.btnXoa.Size = new Size(90, 32);
-            this.btnXoa.Location = new Point(740, 20);
+            this.btnXoa.Location = new Point(860, 20); // Đẩy lùi sang phải
             this.btnXoa.Cursor = Cursors.Hand;
             this.btnXoa.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
 
-            this.pnlFilters.Controls.AddRange(new Control[] { txtTimKiem, btnTim, btnSortAsc, btnSortDesc, btnSua, btnXoa });
+            // Bổ sung btnThem vào pnlFilters
+            this.pnlFilters.Controls.AddRange(new Control[] { txtTimKiem, btnTim, btnSortAsc, btnSortDesc, btnThem, btnSua, btnXoa });
 
             // ==========================================
             // 6. dgvData

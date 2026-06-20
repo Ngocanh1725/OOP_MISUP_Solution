@@ -13,23 +13,37 @@ namespace MISUP.WinForms
         public ucKiemKeKho()
         {
             InitializeComponent();
-
-            // ÉP CHẶT LƯỚI KHÔNG CHO XÔ LỆCH
-            dgvData.AllowUserToResizeColumns = false;
-            dgvData.AllowUserToResizeRows = false;
-            dgvData.AllowUserToOrderColumns = false;
-
             AttachEvents();
             LoadMockData();
+            SetRoundedRegion(pnlCard, 15);
+        }
+
+        private void SetRoundedRegion(Control control, int radius)
+        {
+            control.Resize += (s, e) =>
+            {
+                GraphicsPath path = new GraphicsPath();
+                path.AddArc(0, 0, radius, radius, 180, 90); path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
+                path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90); path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
+                path.CloseFigure(); control.Region = new Region(path);
+            };
         }
 
         private void AttachEvents()
         {
-            txtTimKiem.Enter += (s, e) => { if (txtTimKiem.Text == "Tìm mã phiếu...") { txtTimKiem.Text = ""; txtTimKiem.ForeColor = Color.Black; } };
-            txtTimKiem.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(txtTimKiem.Text)) { txtTimKiem.Text = "Tìm mã phiếu..."; txtTimKiem.ForeColor = Color.Gray; } };
+            txtTimKiem.Enter += (s, e) => { if (txtTimKiem.Text.Contains("Tìm")) { txtTimKiem.Text = ""; txtTimKiem.ForeColor = Color.Black; } };
+            txtTimKiem.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(txtTimKiem.Text)) { txtTimKiem.Text = "🔍 Tìm mã phiếu..."; txtTimKiem.ForeColor = Color.Gray; } };
             dgvData.CellPainting += DgvData_CellPainting;
 
-            // Xử lý tạo phiếu
+            btnTim.Click += (s, e) => {
+                string key = txtTimKiem.Text.Contains("Tìm") ? "" : txtTimKiem.Text.Trim();
+                string status = cmbTrangThai.SelectedIndex == 0 ? "" : cmbTrangThai.Text;
+                string filter = "1=1";
+                if (!string.IsNullOrEmpty(key)) filter += $" AND MaPhieu LIKE '%{key}%'";
+                if (!string.IsNullOrEmpty(status)) filter += $" AND TrangThai = '{status}'";
+                if (dt != null) dt.DefaultView.RowFilter = filter;
+            };
+
             btnThem.Click += (s, e) => {
                 dt.Rows.InsertAt(dt.NewRow(), 0);
                 dt.Rows[0]["MaPhieu"] = "PKK" + DateTime.Now.ToString("MMddHHmm");
@@ -69,7 +83,8 @@ namespace MISUP.WinForms
                 else if (text == "Đã hủy") { bgColor = Color.FromArgb(255, 235, 238); textColor = Color.FromArgb(211, 47, 47); borderColor = Color.FromArgb(255, 205, 210); }
 
                 Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias;
-                Rectangle badgeRect = new Rectangle(e.CellBounds.Left + 10, e.CellBounds.Top + 10, (int)g.MeasureString(text, e.CellStyle.Font).Width + 20, 24);
+                SizeF textSize = g.MeasureString(text, e.CellStyle.Font);
+                Rectangle badgeRect = new Rectangle(e.CellBounds.Left + 15, e.CellBounds.Top + (e.CellBounds.Height - 26) / 2, (int)textSize.Width + 20, 26);
 
                 using (GraphicsPath path = new GraphicsPath())
                 {

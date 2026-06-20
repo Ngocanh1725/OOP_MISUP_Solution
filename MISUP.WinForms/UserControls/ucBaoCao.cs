@@ -1,8 +1,11 @@
 ﻿using MISUP.BLL.Services;
 using MISUP.Models;
 using MISUP.WinForms.Utils;
+using MISUP.WinForms.Forms; // Dùng để gọi Form ChartDialog
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,94 +16,87 @@ namespace MISUP.WinForms
     public partial class ucBaoCao : UserControl
     {
         private HangHoaBLL db = new HangHoaBLL();
-        private Label lblThongKe1, lblThongKe2, lblThongKe3;
+
+        // Lưu trữ danh sách đang được lọc để truyền sang biểu đồ
+        private List<HangHoa> _currentList = new List<HangHoa>();
+        private string _currentMetric = "GiaTri"; // Hoặc "SoLuong"
+        private string _currentTitle = "";
 
         public ucBaoCao()
         {
             InitializeComponent();
+            SetRoundedRegion(pnlCard, 15);
 
-            // Ép chặt giao diện lưới
-            dgvData.AllowUserToResizeColumns = false;
-            dgvData.AllowUserToResizeRows = false;
-            dgvData.AllowUserToOrderColumns = false;
-
-            SetupDashboardCards();
-
-            // Gắn sự kiện cho các nút và bộ lọc
             btnXem.Click += (s, e) => LoadReport();
-            cmbLoaiBaoCao.SelectedIndexChanged += (s, e) => LoadReport(); // Tự động load khi đổi loại báo cáo
-            dtpTuNgay.ValueChanged += (s, e) => LoadReport();
-            dtpDenNgay.ValueChanged += (s, e) => LoadReport();
-
-            // Xử lý sự kiện xuất file CSV thực tế
+            cmbLoaiBaoCao.SelectedIndexChanged += (s, e) => LoadReport();
             btnXuatExcel.Click += BtnXuatExcel_Click;
 
-            // Load mặc định
-            LoadReport();
+            // Gắn sự kiện bật biểu đồ
+            btnXemBieuDo.Click += BtnXemBieuDo_Click;
+
+            LoadReport(); // Mặc định chạy lần đầu
         }
 
-        private void SetupDashboardCards()
+        private void SetRoundedRegion(Control control, int radius)
         {
-            Panel card1 = CreateCard("📊 TỔNG MÃ HÀNG", Color.FromArgb(142, 68, 173), out lblThongKe1);
-            Panel card2 = CreateCard("💰 TỔNG TÀI SẢN KHO", Color.FromArgb(39, 174, 96), out lblThongKe2);
-            Panel card3 = CreateCard("📦 TỔNG SL VẬT LÝ", Color.FromArgb(230, 126, 34), out lblThongKe3);
-
-            card1.Left = 20; card2.Left = 280; card3.Left = 540;
-            pnlDashboard.Controls.AddRange(new Control[] { card1, card2, card3 });
-        }
-
-        private Panel CreateCard(string title, Color bgColor, out Label lblValue)
-        {
-            Panel p = new Panel() { Width = 240, Height = 80, BackColor = bgColor, Top = 10 };
-            Label lblTitle = new Label() { Text = title, ForeColor = Color.White, Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true, Left = 10, Top = 10 };
-            lblValue = new Label() { Text = "0", ForeColor = Color.White, Font = new Font("Segoe UI", 18, FontStyle.Bold), AutoSize = true, Left = 10, Top = 35 };
-            p.Controls.Add(lblTitle); p.Controls.Add(lblValue);
-            return p;
+            control.Resize += (s, e) =>
+            {
+                GraphicsPath path = new GraphicsPath();
+                path.AddArc(0, 0, radius, radius, 180, 90); path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
+                path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90); path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
+                path.CloseFigure(); control.Region = new Region(path);
+            };
         }
 
         private void LoadReport()
         {
-            // Cập nhật thẻ Thống kê bằng Data thực tế từ BLL
             lblThongKe1.Text = db.DemTongSoMatHang().ToString("N0") + " SKU";
             lblThongKe2.Text = db.TinhTongGiaTriKho().ToString("N0") + " đ";
             lblThongKe3.Text = db.TinhTongTonKhoThucTe().ToString("N0") + " cái";
 
-            // Lọc dữ liệu theo ComboBox
             if (cmbLoaiBaoCao.SelectedIndex == 0) // Tồn kho hiện tại
             {
-                var list = db.LayDanhSach().OrderByDescending(x => x.TinhTongGiaTriSauThue()).ToList();
-                dgvData.DataSource = list.Select(h => new {
+                _currentList = db.LayDanhSach().OrderByDescending(x => x.TinhTongGiaTriSauThue()).ToList();
+                dgvData.DataSource = _currentList.Select(h => new {
                     h.MaHang,
                     h.TenHang,
                     NhaCungCap = h.NhaSanXuat,
                     Kho = h.SoLuongNhap,
                     GiaTri = h.TinhTongGiaTriSauThue().ToString("N0") + " đ"
                 }).ToList();
+
+                _currentTitle = "Top 10 Sản phẩm có Giá trị Kho cao nhất";
+                _currentMetric = "GiaTri";
             }
             else if (cmbLoaiBaoCao.SelectedIndex == 1) // Hàng sắp hết (< 10) hoăc theo TonKhoToiThieu
             {
-                var list = db.LayHangSapHetTonKho();
-                dgvData.DataSource = list.Select(h => new {
+                _currentList = db.LayHangSapHetTonKho();
+                dgvData.DataSource = _currentList.Select(h => new {
                     h.MaHang,
                     h.TenHang,
                     Kho = h.SoLuongNhap,
                     MucCanhBao = h.TonKhoToiThieu,
                     TinhTrang = "Cần nhập gấp"
                 }).ToList();
+
+                _currentTitle = "Biểu đồ Các Sản phẩm Sắp hết hàng";
+                _currentMetric = "SoLuong";
             }
             else // Hàng Cận Date
             {
-                var list = db.LayHangCanDate(30); // Cận date trong 30 ngày tới
-                dgvData.DataSource = list.Select(h => new {
+                _currentList = db.LayHangCanDate(30);
+                dgvData.DataSource = _currentList.Select(h => new {
                     h.MaHang,
                     h.TenHang,
                     Kho = h.SoLuongNhap,
                     HSD = h.HanSuDung.HasValue ? h.HanSuDung.Value.ToString("dd/MM/yyyy") : "-",
                     TinhTrang = "Cận Date"
                 }).ToList();
+
+                _currentTitle = "Số lượng Tồn của hàng Cận Date";
+                _currentMetric = "SoLuong";
             }
 
-            // Đổi tên header cho đẹp
             if (dgvData.Columns.Count > 0)
             {
                 dgvData.Columns["MaHang"].HeaderText = "Mã Hàng";
@@ -114,49 +110,25 @@ namespace MISUP.WinForms
             }
         }
 
-        private void BtnXuatExcel_Click(object sender, EventArgs e)
+        private void BtnXemBieuDo_Click(object sender, EventArgs e)
         {
-            if (dgvData.Rows.Count == 0)
+            if (_currentList == null || _currentList.Count == 0)
             {
-                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Không có dữ liệu nào để vẽ biểu đồ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            try
+            // Gọi cửa sổ Popup chứa Biểu đồ lên
+            using (var dialog = new ChartDialog(_currentList, _currentTitle, _currentMetric))
             {
-                using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "CSV File (*.csv)|*.csv", FileName = "BaoCao_" + DateTime.Now.ToString("ddMMyyyy_HHmm") + ".csv" })
-                {
-                    if (sfd.ShowDialog() == DialogResult.OK)
-                    {
-                        StringBuilder sb = new StringBuilder();
-
-                        // Lấy danh sách tên cột
-                        var headers = dgvData.Columns.Cast<DataGridViewColumn>().Select(c => c.HeaderText).ToArray();
-                        sb.AppendLine(string.Join(",", headers));
-
-                        // Lấy dữ liệu từng dòng
-                        foreach (DataGridViewRow row in dgvData.Rows)
-                        {
-                            var cells = row.Cells.Cast<DataGridViewCell>().Select(c =>
-                            {
-                                string cellValue = c.Value != null ? c.Value.ToString() : "";
-                                // Xóa dấu phẩy trong giá trị (nếu có) để tránh làm hỏng cấu trúc file CSV
-                                return cellValue.Replace(",", "");
-                            }).ToArray();
-
-                            sb.AppendLine(string.Join(",", cells));
-                        }
-
-                        // Ghi ra file với chuẩn UTF-8 BOM để Excel đọc được tiếng Việt có dấu
-                        File.WriteAllText(sfd.FileName, sb.ToString(), new UTF8Encoding(true));
-                        MessageBox.Show("Xuất báo cáo thành công!\nĐã lưu tại: " + sfd.FileName, "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
+                dialog.ShowDialog();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Có lỗi xảy ra khi xuất file: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+        }
+
+        private void BtnXuatExcel_Click(object sender, EventArgs e)
+        {
+            if (dgvData.Rows.Count == 0) { MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+            ExportHelper.ExportToCSV(db.LayDanhSach());
         }
     }
 }
