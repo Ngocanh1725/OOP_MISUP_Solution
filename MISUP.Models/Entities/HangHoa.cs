@@ -7,57 +7,65 @@ using System.Threading.Tasks;
 // thay đổi dữ liệu thông qua các phương thức công khai (Properties/Methods)
 // để kiểm soát tính hợp lệ của dữ liệu.
 namespace MISUP.Models
-{   //Lớp cha
+{
+    // LỚP CHA (Trừu tượng) - Đã được dọn dẹp sạch sẽ, không chứa các lớp con
     public abstract class HangHoa
     {
-        private int _soLuongNhap;// Giấu đi để biến chứa dữ liệu là private để không ai có thể sửa trực tiếp.
+        private int _soLuongNhap;
         private decimal _donGia;
+        private int _tonKhoToiThieu;
 
         public string MaHang { get; set; }
+        public string MaVach { get; set; }
         public string TenHang { get; set; }
         public string NhaSanXuat { get; set; }
+        public DateTime? HanSuDung { get; set; }
 
-        public int SoLuongNhap// Cổng giao tiếp public.
-                             
+        public string DonViTinh { get; set; } = "Cái";
+
+        public int SoLuongNhap
         {
-            get => _soLuongNhap;// Muốn xem thì get sẽ trả về
-            set { if (value < 0) throw new ArgumentException("Số lượng không âm!"); _soLuongNhap = value; }
-            // Set kiểm tra, sau đó cài đặt lại giá trị
+            get => _soLuongNhap;
+            set { if (value < 0) throw new ArgumentException("Số lượng không được âm!"); _soLuongNhap = value; }
         }
 
         public decimal DonGia
         {
             get => _donGia;
-            set { if (value < 0) throw new ArgumentException("Đơn giá không âm!"); _donGia = value; }
+            set { if (value < 0) throw new ArgumentException("Đơn giá không được âm!"); _donGia = value; }
         }
-        // Cho phép một lớp mới (Lớp con) sử dụng lại các thuộc tính
-        // và phương thức của một lớp đã có (Lớp cha) mà không cần phải viết lại code.
-        //Constructor lớp cha
-        public HangHoa(string maHang, string tenHang, string nhaSanXuat, int soLuongNhap, decimal donGia)
+
+        public int TonKhoToiThieu
         {
-            MaHang = maHang;
-            TenHang = tenHang;
-            NhaSanXuat = nhaSanXuat;
-            SoLuongNhap = soLuongNhap;
-            DonGia = donGia;
+            get => _tonKhoToiThieu;
+            set { if (value < 0) throw new ArgumentException("Tồn tối thiểu không được âm!"); _tonKhoToiThieu = value; }
+        }
+
+        public HangHoa(string maHang, string maVach, string tenHang, string nhaSanXuat, int soLuongNhap, decimal donGia, DateTime? hanSuDung, int tonKhoToiThieu)
+        {
+            MaHang = maHang; MaVach = maVach; TenHang = tenHang; NhaSanXuat = nhaSanXuat;
+            SoLuongNhap = soLuongNhap; DonGia = donGia; HanSuDung = hanSuDung; TonKhoToiThieu = tonKhoToiThieu;
         }
 
         // ====================================================================
-        // 3. CHUẨN BỊ CHO TÍNH ĐA HÌNH (POLYMORPHISM)
-        // Dùng từ khóa 'virtual' để cho phép các lớp con ghi đè lại cách tính thuế.
-        // Mặc định lớp cha không tính thuế (0%).
+        // TÍNH ĐA HÌNH (POLYMORPHISM) - Phương thức ảo cho phép ghi đè
         // ====================================================================
         public virtual decimal TinhThueVAT()
         {
-            return 0;
+            return 0; // Mặc định không thuế
         }
 
-        // Hàm chung: Tổng giá trị = (Số lượng * Đơn giá) + Thuế VAT
         public decimal TinhTongGiaTriSauThue()
         {
-            return SoLuongNhap * DonGia + TinhThueVAT();
+            return (SoLuongNhap * DonGia) + TinhThueVAT();
         }
+
+        // ====================================================================
+        // TÍNH ĐÓNG GÓI (ENCAPSULATION) - Xử lý nghiệp vụ nội tại
+        // ====================================================================
+        public bool IsHetHan() => HanSuDung.HasValue && HanSuDung.Value.Date < DateTime.Now.Date;
+
+        public bool IsSapHetHan(int soNgayCanhBao = 30)
+            => HanSuDung.HasValue && HanSuDung.Value.Date >= DateTime.Now.Date && HanSuDung.Value.Date <= DateTime.Now.AddDays(soNgayCanhBao).Date;
     }
-
 }
-

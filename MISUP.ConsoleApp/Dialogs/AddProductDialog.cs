@@ -1,74 +1,102 @@
 ﻿using MISUP.BLL.Services;
 using MISUP.Models;
-using NStack; 
+using NStack;
 using System;
 using Terminal.Gui;
 using Application = Terminal.Gui.Application;
 
-
-
 namespace MISUP.ConsoleApp.Dialogs
 {
-    // Kế thừa từ Dialog của Terminal.Gui
     public class AddProductDialog : Dialog
     {
         private HangHoaBLL _db;
         private bool _isEdit;
         public bool IsSaved { get; private set; } = false;
 
-        // Constructor phải gọi base với tham số đầu tiên ép kiểu về (ustring)
         public AddProductDialog(HangHoaBLL db, HangHoa sp = null)
-            : base((ustring)(sp == null ? "Thêm Sản Phẩm" : "Sửa Sản Phẩm"), 60, 20)
+            : base((ustring)(sp == null ? "Them San Pham" : "Sua San Pham"), 65, 22)
         {
             _db = db;
             _isEdit = sp != null;
             ColorScheme = ThemeManager.HackerScheme;
 
-            var txtMa = new TextField(_isEdit ? sp.MaHang : "") { X = 15, Y = 2, Width = 35, ReadOnly = _isEdit, ColorScheme = ThemeManager.InputScheme };
-            var txtTen = new TextField(_isEdit ? sp.TenHang : "") { X = 15, Y = 4, Width = 35, ColorScheme = ThemeManager.InputScheme };
-            var txtNSX = new TextField(_isEdit ? sp.NhaSanXuat : "") { X = 15, Y = 6, Width = 35, ColorScheme = ThemeManager.InputScheme };
-            var txtSL = new TextField(_isEdit ? sp.SoLuongNhap.ToString() : "") { X = 15, Y = 8, Width = 35, ColorScheme = ThemeManager.InputScheme };
-            var txtGia = new TextField(_isEdit ? sp.DonGia.ToString() : "") { X = 15, Y = 10, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtMa = new TextField(_isEdit ? sp.MaHang : "") { X = 18, Y = 2, Width = 35, ReadOnly = _isEdit, ColorScheme = ThemeManager.InputScheme };
+            var txtMaVach = new TextField(_isEdit ? sp.MaVach : "") { X = 18, Y = 4, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtTen = new TextField(_isEdit ? sp.TenHang : "") { X = 18, Y = 6, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtNSX = new TextField(_isEdit ? sp.NhaSanXuat : "") { X = 18, Y = 8, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtSL = new TextField(_isEdit ? sp.SoLuongNhap.ToString() : "0") { X = 18, Y = 10, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtGia = new TextField(_isEdit ? sp.DonGia.ToString() : "0") { X = 18, Y = 12, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtTonMin = new TextField(_isEdit ? sp.TonKhoToiThieu.ToString() : "10") { X = 18, Y = 14, Width = 35, ColorScheme = ThemeManager.InputScheme };
+            var txtHSD = new TextField(_isEdit && sp.HanSuDung.HasValue ? sp.HanSuDung.Value.ToString("dd/MM/yyyy") : "") { X = 18, Y = 16, Width = 35, ColorScheme = ThemeManager.InputScheme };
 
-            var radioLoai = new RadioGroup(new ustring[] { "Thực Phẩm", "Điện Tử", "Mỹ Phẩm", "Gia Dụng", "Thời Trang" }) { X = 15, Y = 12 };
-            if (_isEdit) radioLoai.SelectedItem = sp switch { HangThucPham _ => 0, HangDienTu _ => 1, HangMyPham _ => 2, HangGiaDung _ => 3, HangThoiTrang _ => 4, _ => 0 };
+            var radioLoai = new ComboBox() { X = 18, Y = 18, Width = 35, Height = 5 };
 
-            var btnSave = new Button("Lưu Lại", is_default: true) { X = Pos.Center() - 12, Y = 18 };
-            var btnBack = new Button("Quay lại") { X = Pos.Center() + 4, Y = 18 };
+            // ĐÃ FIX LỖI CS0029 Ở DÒNG DƯỚI ĐÂY: Sử dụng new string[]
+            radioLoai.SetSource(new string[] { "Thuc Pham", "Dien Tu", "My Pham", "Gia Dung", "Thoi Trang" });
+
+            if (_isEdit)
+            {
+                string loaiStr = sp.GetType().Name;
+                radioLoai.SelectedItem = loaiStr switch { "HangThucPham" => 0, "HangDienTu" => 1, "HangMyPham" => 2, "HangGiaDung" => 3, "HangThoiTrang" => 4, _ => 0 };
+            }
+            else
+            {
+                radioLoai.SelectedItem = 0;
+            }
+
+            var btnSave = new Button("Luu Lai") { X = Pos.Center() - 10, Y = 20, IsDefault = true };
+            var btnBack = new Button("Quay lai") { X = Pos.Center() + 4, Y = 20 };
 
             btnBack.Clicked += () => Application.RequestStop();
-            btnSave.Clicked += () => SaveProduct(txtMa.Text.ToString(), txtTen.Text.ToString(), txtNSX.Text.ToString(), txtSL.Text.ToString(), txtGia.Text.ToString(), radioLoai.SelectedItem);
+            btnSave.Clicked += () => SaveProduct(
+                txtMa.Text.ToString(), txtMaVach.Text.ToString(), txtTen.Text.ToString(), txtNSX.Text.ToString(),
+                txtSL.Text.ToString(), txtGia.Text.ToString(), txtTonMin.Text.ToString(), txtHSD.Text.ToString(),
+                radioLoai.SelectedItem);
 
-            Add(new Label("Mã hàng:") { X = 2, Y = 2 }, txtMa, new Label("Tên SP:") { X = 2, Y = 4 }, txtTen,
-                     new Label("Nhà SX:") { X = 2, Y = 6 }, txtNSX, new Label("Số lượng:") { X = 2, Y = 8 }, txtSL,
-                     new Label("Đơn giá:") { X = 2, Y = 10 }, txtGia, new Label("Loại hàng:") { X = 2, Y = 12 }, radioLoai, btnSave, btnBack);
+            Add(new Label("Ma hang:") { X = 2, Y = 2 }, txtMa,
+                new Label("Ma vach:") { X = 2, Y = 4 }, txtMaVach,
+                new Label("Ten SP:") { X = 2, Y = 6 }, txtTen,
+                new Label("Nha SX:") { X = 2, Y = 8 }, txtNSX,
+                new Label("So luong:") { X = 2, Y = 10 }, txtSL,
+                new Label("Don gia:") { X = 2, Y = 12 }, txtGia,
+                new Label("Ton Toi Thieu:") { X = 2, Y = 14 }, txtTonMin,
+                new Label("HSD (dd/MM/yyyy):") { X = 2, Y = 16 }, txtHSD,
+                new Label("Loai hang:") { X = 2, Y = 18 }, radioLoai,
+                btnSave, btnBack);
         }
 
-        private void SaveProduct(string ma, string ten, string nsx, string slText, string giaText, int loaiIndex)
+        private void SaveProduct(string ma, string maVach, string ten, string nsx, string slText, string giaText, string minText, string hsdText, int loaiIndex)
         {
             try
             {
                 int sl = int.Parse(slText);
                 decimal gia = decimal.Parse(giaText);
+                int min = int.Parse(minText);
 
-                HangHoa h = loaiIndex switch
+                DateTime? hsd = null;
+                if (!string.IsNullOrWhiteSpace(hsdText))
+                    hsd = DateTime.ParseExact(hsdText, "dd/MM/yyyy", null);
+
+                string l = loaiIndex switch { 0 => "ThucPham", 1 => "DienTu", 2 => "MyPham", 3 => "GiaDung", 4 => "ThoiTrang", _ => "ThucPham" };
+
+                HangHoa h = l switch
                 {
-                    0 => new HangThucPham(ma, ten, nsx, sl, gia),
-                    1 => new HangDienTu(ma, ten, nsx, sl, gia),
-                    2 => new HangMyPham(ma, ten, nsx, sl, gia),
-                    3 => new HangGiaDung(ma, ten, nsx, sl, gia),
-                    4 => new HangThoiTrang(ma, ten, nsx, sl, gia),
+                    "ThucPham" => new HangThucPham(ma, maVach, ten, nsx, sl, gia, hsd, min),
+                    "DienTu" => new HangDienTu(ma, maVach, ten, nsx, sl, gia, hsd, min),
+                    "MyPham" => new HangMyPham(ma, maVach, ten, nsx, sl, gia, hsd, min),
+                    "GiaDung" => new HangGiaDung(ma, maVach, ten, nsx, sl, gia, hsd, min),
+                    "ThoiTrang" => new HangThoiTrang(ma, maVach, ten, nsx, sl, gia, hsd, min),
                     _ => null
                 };
 
-                if (_isEdit) _db.SuaHang(h); else _db.NhapHang(h, loaiIndex switch { 0 => "ThucPham", 1 => "DienTu", 2 => "MyPham", 3 => "GiaDung", 4 => "ThoiTrang", _ => "ThucPham" });
+                if (_isEdit) _db.SuaHang(h); else _db.NhapHang(h, l);
 
                 IsSaved = true;
                 Application.RequestStop();
             }
             catch (Exception ex)
             {
-                MessageBox.ErrorQuery("Lỗi", ex.Message, "OK");
+                MessageBox.ErrorQuery("Loi Nhap Lieu", ex.Message, "OK");
             }
         }
     }

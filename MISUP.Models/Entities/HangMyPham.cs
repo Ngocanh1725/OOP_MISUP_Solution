@@ -8,6 +8,13 @@ namespace MISUP.Models
 {
     public class HangMyPham : HangHoa
     {
-        public HangMyPham(string m, string t, string n, int s, decimal d) : base(m, t, n, s, d) { }
+        public HangMyPham(string m, string mv, string t, string n, int s, decimal d, DateTime? hsd, int tmin)
+            : base(m, mv, t, n, s, d, hsd, tmin) { }
+
+        // [TÍNH ĐA HÌNH]: Mỹ phẩm chịu thuế VAT đặc biệt 8%
+        public override decimal TinhThueVAT()
+        {
+            return (SoLuongNhap * DonGia) * 0.08m;
+        }
     }
 }
