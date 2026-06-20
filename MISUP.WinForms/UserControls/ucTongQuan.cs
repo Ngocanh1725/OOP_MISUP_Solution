@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using MISUP.BLL.Services;
@@ -15,41 +16,61 @@ namespace MISUP.WinForms
         public ucTongQuan()
         {
             InitializeComponent();
-            
             LoadDashboardData();
+
+            // Bo tròn các Card
+            SetRoundedRegion(cardSKU, 15);
+            SetRoundedRegion(cardGiaTri, 15);
+            SetRoundedRegion(cardCanhBaoTon, 15);
+            SetRoundedRegion(cardCanhBaoHSD, 15);
+            SetRoundedRegion(pnlCanhBao, 15);
+        }
+
+        // Hàm tiện ích cắt góc bo tròn cho Panel
+        private void SetRoundedRegion(Control control, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(0, 0, radius, radius, 180, 90);
+            path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
+            path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90);
+            path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            control.Region = new Region(path);
+
+            // Xử lý lại khi control thay đổi kích thước
+            control.Resize += (s, e) =>
+            {
+                GraphicsPath newPath = new GraphicsPath();
+                newPath.AddArc(0, 0, radius, radius, 180, 90);
+                newPath.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
+                newPath.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90);
+                newPath.AddArc(0, control.Height - radius, radius, radius, 90, 90);
+                newPath.CloseFigure();
+                control.Region = new Region(newPath);
+            };
         }
 
         private void LoadDashboardData()
         {
             try
             {
-                // 1. GỌI DỮ LIỆU TỪ TẦNG BLL
                 int tongSKU = _db.DemTongSoMatHang();
                 decimal tongGiaTri = _db.TinhTongGiaTriKho();
 
-                // Lấy danh sách hàng cần lưu ý
                 List<HangHoa> hangSapHetTon = _db.LayHangSapHetTonKho();
                 List<HangHoa> hangHetHan = _db.LayHangHetHan();
-                List<HangHoa> hangCanDate = _db.LayHangCanDate(30); // Cận date trong 30 ngày tới
+                List<HangHoa> hangCanDate = _db.LayHangCanDate(30);
 
-                // 2. GÁN LÊN CÁC THẺ CARD (Hiển thị số liệu tổng quát)
                 lblTongSKUValue.Text = tongSKU.ToString("N0");
                 lblTongGiaTriValue.Text = tongGiaTri.ToString("N0") + " đ";
-
-                // Tổng hợp hàng sắp hết tồn kho (Cảnh báo cam)
                 lblCanhBaoTonValue.Text = hangSapHetTon.Count.ToString();
-
-                // Tổng hợp số lượng hàng có vấn đề về HSD (Cảnh báo đỏ)
                 lblCanhBaoHSDValue.Text = (hangHetHan.Count + hangCanDate.Count).ToString();
 
-                // 3. ĐỔ DỮ LIỆU CHI TIẾT LÊN DATAGRIDVIEW
-                // Gộp chung 3 danh sách cần cảnh báo lại thành 1 list duy nhất để hiển thị
                 var danhSachCanhBaoTongHop = new List<HangHoa>();
                 danhSachCanhBaoTongHop.AddRange(hangSapHetTon);
                 danhSachCanhBaoTongHop.AddRange(hangHetHan);
                 danhSachCanhBaoTongHop.AddRange(hangCanDate);
 
-                // Loại bỏ các sản phẩm trùng lặp (ví dụ 1 SP vừa sắp hết tồn, vừa sắp hết hạn)
                 var danhSachHienThi = danhSachCanhBaoTongHop.Distinct().Select(h => new
                 {
                     MaHang = h.MaHang,
@@ -63,7 +84,6 @@ namespace MISUP.WinForms
 
                 dgvCanhBao.DataSource = danhSachHienThi;
 
-                // Tinh chỉnh hiển thị DataGridView
                 if (dgvCanhBao.Columns.Count > 0)
                 {
                     dgvCanhBao.Columns["MaHang"].HeaderText = "Mã SKU";
@@ -73,11 +93,9 @@ namespace MISUP.WinForms
                     dgvCanhBao.Columns["TrangThaiTon"].HeaderText = "Vấn đề Tồn kho";
                     dgvCanhBao.Columns["HanSuDung"].HeaderText = "HSD";
                     dgvCanhBao.Columns["TrangThaiHSD"].HeaderText = "Vấn đề HSD";
-
                     dgvCanhBao.Columns["TenHang"].FillWeight = 200;
                 }
 
-                // Gắn sự kiện để tô màu chữ đỏ/cam cho các cột cảnh báo
                 dgvCanhBao.CellFormatting += DgvCanhBao_CellFormatting;
             }
             catch (Exception ex)
@@ -86,7 +104,6 @@ namespace MISUP.WinForms
             }
         }
 
-        // Đổi màu cảnh báo tự động
         private void DgvCanhBao_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex >= 0 && e.Value != null)
@@ -103,11 +120,6 @@ namespace MISUP.WinForms
                 {
                     if (valueStr == "Đã hết hạn") { e.CellStyle.ForeColor = Color.Red; e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold); }
                     else if (valueStr == "Cận Date") e.CellStyle.ForeColor = Color.DarkOrange;
-                }
-                else if (columnName == "Kho")
-                {
-                    int sl = Convert.ToInt32(e.Value);
-                    if (sl == 0) e.CellStyle.ForeColor = Color.Red;
                 }
             }
         }

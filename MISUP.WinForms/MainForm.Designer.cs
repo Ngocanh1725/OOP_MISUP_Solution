@@ -17,7 +17,6 @@
 
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.Panel pnlHeaderBorder;
-        private System.Windows.Forms.TextBox txtSearchHeader;
         private System.Windows.Forms.Button btnUser;
         private System.Windows.Forms.Button btnLogout;
 
@@ -46,7 +45,6 @@
 
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.pnlHeaderBorder = new System.Windows.Forms.Panel();
-            this.txtSearchHeader = new System.Windows.Forms.TextBox();
             this.btnUser = new System.Windows.Forms.Button();
             this.btnLogout = new System.Windows.Forms.Button();
             this.pnlContent = new System.Windows.Forms.Panel();
@@ -113,7 +111,6 @@
             this.pnlHeader.BackColor = System.Drawing.Color.White;
             this.pnlHeader.Controls.Add(this.btnLogout);
             this.pnlHeader.Controls.Add(this.btnUser);
-            this.pnlHeader.Controls.Add(this.txtSearchHeader);
             this.pnlHeader.Controls.Add(this.pnlHeaderBorder);
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(230, 0);
@@ -125,14 +122,6 @@
             this.pnlHeaderBorder.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlHeaderBorder.Height = 1;
 
-            // txtSearchHeader
-            this.txtSearchHeader.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.txtSearchHeader.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtSearchHeader.ForeColor = System.Drawing.Color.Gray;
-            this.txtSearchHeader.Location = new System.Drawing.Point(20, 16);
-            this.txtSearchHeader.Size = new System.Drawing.Size(350, 25);
-            this.txtSearchHeader.Text = "🔍 Tìm kiếm (Ctrl + K)";
-
             // btnUser
             this.btnUser.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnUser.FlatAppearance.BorderSize = 0;
@@ -140,6 +129,7 @@
             this.btnUser.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.btnUser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
             this.btnUser.Location = new System.Drawing.Point(670, 0);
+            this.btnUser.Name = "btnUser";
             this.btnUser.Size = new System.Drawing.Size(300, 60);
             this.btnUser.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 
@@ -150,6 +140,7 @@
             this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnLogout.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
             this.btnLogout.Location = new System.Drawing.Point(980, 0);
+            this.btnLogout.Name = "btnLogout";
             this.btnLogout.Size = new System.Drawing.Size(100, 60);
             this.btnLogout.Text = "Đăng xuất";
             this.btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
@@ -170,7 +161,6 @@
             this.Text = "Hệ thống Quản lý Nhập hàng MISUP";
             this.pnlSidebar.ResumeLayout(false);
             this.pnlHeader.ResumeLayout(false);
-            this.pnlHeader.PerformLayout();
             this.ResumeLayout(false);
         }
 
