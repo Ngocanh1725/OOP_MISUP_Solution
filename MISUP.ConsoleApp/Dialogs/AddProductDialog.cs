@@ -4,6 +4,7 @@ using NStack;
 using System;
 using Terminal.Gui;
 using Application = Terminal.Gui.Application;
+using Attribute = Terminal.Gui.Attribute; // Thêm dòng này để xử lý màu sắc
 
 namespace MISUP.ConsoleApp.Dialogs
 {
@@ -14,7 +15,7 @@ namespace MISUP.ConsoleApp.Dialogs
         public bool IsSaved { get; private set; } = false;
 
         public AddProductDialog(HangHoaBLL db, HangHoa sp = null)
-            : base((ustring)(sp == null ? "Them San Pham" : "Sua San Pham"), 65, 22)
+            : base((ustring)(sp == null ? "Thêm Sản Phẩm" : "Sửa Sản Phẩm"), 65, 26) // TĂNG CHIỀU CAO TỪ 22 LÊN 26 ĐỂ KHÔNG BỊ CHE NÚT BẤM
         {
             _db = db;
             _isEdit = sp != null;
@@ -29,10 +30,9 @@ namespace MISUP.ConsoleApp.Dialogs
             var txtTonMin = new TextField(_isEdit ? sp.TonKhoToiThieu.ToString() : "10") { X = 18, Y = 14, Width = 35, ColorScheme = ThemeManager.InputScheme };
             var txtHSD = new TextField(_isEdit && sp.HanSuDung.HasValue ? sp.HanSuDung.Value.ToString("dd/MM/yyyy") : "") { X = 18, Y = 16, Width = 35, ColorScheme = ThemeManager.InputScheme };
 
-            var radioLoai = new ComboBox() { X = 18, Y = 18, Width = 35, Height = 5 };
+            var radioLoai = new ComboBox() { X = 18, Y = 18, Width = 35, Height = 6 }; // Tăng độ cao cho menu thả xuống
 
-            // ĐÃ FIX LỖI CS0029 Ở DÒNG DƯỚI ĐÂY: Sử dụng new string[]
-            radioLoai.SetSource(new string[] { "Thuc Pham", "Dien Tu", "My Pham", "Gia Dung", "Thoi Trang" });
+            radioLoai.SetSource(new string[] { "Thực Phẩm", "Điện Tử", "Mỹ Phẩm", "Gia Dụng", "Thời Trang" });
 
             if (_isEdit)
             {
@@ -44,8 +44,18 @@ namespace MISUP.ConsoleApp.Dialogs
                 radioLoai.SelectedItem = 0;
             }
 
-            var btnSave = new Button("Luu Lai") { X = Pos.Center() - 10, Y = 20, IsDefault = true };
-            var btnBack = new Button("Quay lai") { X = Pos.Center() + 4, Y = 20 };
+            // Tạo bộ màu (hiệu ứng) riêng cho các nút bấm
+            var btnScheme = new ColorScheme()
+            {
+                Normal = new Attribute(Color.Cyan, Color.Black),
+                Focus = new Attribute(Color.Black, Color.Cyan),
+                HotNormal = new Attribute(Color.BrightCyan, Color.Black),
+                HotFocus = new Attribute(Color.Black, Color.BrightCyan)
+            };
+
+            // Đẩy vị trí Y xuống 22 để nút nằm gọn gàng bên trong hộp thoại
+            var btnSave = new Button("Lưu lại") { X = Pos.Center() - 10, Y = 22, IsDefault = true, ColorScheme = btnScheme };
+            var btnBack = new Button("Hủy bỏ") { X = Pos.Center() + 4, Y = 22, ColorScheme = btnScheme };
 
             btnBack.Clicked += () => Application.RequestStop();
             btnSave.Clicked += () => SaveProduct(
@@ -53,15 +63,15 @@ namespace MISUP.ConsoleApp.Dialogs
                 txtSL.Text.ToString(), txtGia.Text.ToString(), txtTonMin.Text.ToString(), txtHSD.Text.ToString(),
                 radioLoai.SelectedItem);
 
-            Add(new Label("Ma hang:") { X = 2, Y = 2 }, txtMa,
-                new Label("Ma vach:") { X = 2, Y = 4 }, txtMaVach,
-                new Label("Ten SP:") { X = 2, Y = 6 }, txtTen,
-                new Label("Nha SX:") { X = 2, Y = 8 }, txtNSX,
-                new Label("So luong:") { X = 2, Y = 10 }, txtSL,
-                new Label("Don gia:") { X = 2, Y = 12 }, txtGia,
-                new Label("Ton Toi Thieu:") { X = 2, Y = 14 }, txtTonMin,
+            Add(new Label("Mã hàng:") { X = 2, Y = 2 }, txtMa,
+                new Label("Mã vạch:") { X = 2, Y = 4 }, txtMaVach,
+                new Label("Tên SP:") { X = 2, Y = 6 }, txtTen,
+                new Label("Nhà SX:") { X = 2, Y = 8 }, txtNSX,
+                new Label("Số lượng:") { X = 2, Y = 10 }, txtSL,
+                new Label("Đơn giá:") { X = 2, Y = 12 }, txtGia,
+                new Label("Tồn tối thiểu:") { X = 2, Y = 14 }, txtTonMin,
                 new Label("HSD (dd/MM/yyyy):") { X = 2, Y = 16 }, txtHSD,
-                new Label("Loai hang:") { X = 2, Y = 18 }, radioLoai,
+                new Label("Loại hàng:") { X = 2, Y = 18 }, radioLoai,
                 btnSave, btnBack);
         }
 
@@ -79,7 +89,8 @@ namespace MISUP.ConsoleApp.Dialogs
 
                 string l = loaiIndex switch { 0 => "ThucPham", 1 => "DienTu", 2 => "MyPham", 3 => "GiaDung", 4 => "ThoiTrang", _ => "ThucPham" };
 
-                HangHoa h = l switch
+                // Khai báo kiểu nullable (HangHoa?) để C# biết biến này có thể nhận giá trị null
+                HangHoa? h = l switch
                 {
                     "ThucPham" => new HangThucPham(ma, maVach, ten, nsx, sl, gia, hsd, min),
                     "DienTu" => new HangDienTu(ma, maVach, ten, nsx, sl, gia, hsd, min),
@@ -89,14 +100,22 @@ namespace MISUP.ConsoleApp.Dialogs
                     _ => null
                 };
 
-                if (_isEdit) _db.SuaHang(h); else _db.NhapHang(h, l);
+                // Kiểm tra null an toàn trước khi gọi Database
+                if (h != null)
+                {
+                    if (_isEdit) _db.SuaHang(h); else _db.NhapHang(h, l);
 
-                IsSaved = true;
-                Application.RequestStop();
+                    IsSaved = true;
+                    Application.RequestStop();
+                }
+                else
+                {
+                    MessageBox.ErrorQuery("Lỗi", "Hệ thống không nhận dạng được loại sản phẩm này!", "OK");
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.ErrorQuery("Loi Nhap Lieu", ex.Message, "OK");
+                MessageBox.ErrorQuery("Lỗi Nhập Liệu", ex.Message, "OK");
             }
         }
     }

@@ -3,6 +3,7 @@ using MISUP.Models;
 using System;
 using Terminal.Gui;
 using Application = Terminal.Gui.Application;
+using Attribute = Terminal.Gui.Attribute; // Thêm dòng này để xử lý màu sắc
 
 namespace MISUP.ConsoleApp.Dialogs
 {
@@ -18,9 +19,21 @@ namespace MISUP.ConsoleApp.Dialogs
             var txtUser = new TextField("") { X = 18, Y = 2, Width = 40, ColorScheme = ThemeManager.InputScheme };
             var txtPass = new TextField("") { X = 18, Y = 4, Width = 40, Secret = true, ColorScheme = ThemeManager.InputScheme };
 
-            var btnLogin = new Button("• Đăng nhập •") { X = 10, Y = 7, IsDefault = true };
-            var btnRegister = new Button("Đăng ký") { X = Pos.Right(btnLogin) + 3, Y = 7 };
-            var btnExit = new Button("Thoát") { X = Pos.Right(btnRegister) + 3, Y = 7 };
+            // Tạo bộ màu (hiệu ứng) riêng cho các nút bấm
+            var btnScheme = new ColorScheme()
+            {
+                Normal = new Attribute(Color.Cyan, Color.Black),          // Bình thường: Chữ xanh, nền đen
+                Focus = new Attribute(Color.Black, Color.Cyan),           // Khi trỏ chuột/chọn vào: Chữ đen, nền xanh (Nổi bật)
+                HotNormal = new Attribute(Color.BrightCyan, Color.Black),
+                HotFocus = new Attribute(Color.Black, Color.BrightCyan)
+            };
+
+            // Áp dụng bộ màu vừa tạo cho 3 nút
+            var btnLogin = new Button("• Đăng nhập •") { X = 10, Y = 7, IsDefault = true, ColorScheme = btnScheme };
+            var btnRegister = new Button("Đăng ký") { X = Pos.Right(btnLogin) + 3, Y = 7, ColorScheme = btnScheme };
+            var btnExit = new Button("Thoát") { X = Pos.Right(btnRegister) + 3, Y = 7, ColorScheme = btnScheme };
+
+            
 
             btnLogin.Clicked += () => ProcessLogin(txtUser.Text.ToString(), txtPass.Text.ToString());
             btnRegister.Clicked += () => MessageBox.Query("Thông báo", "Vui lòng liên hệ Admin!", "OK");

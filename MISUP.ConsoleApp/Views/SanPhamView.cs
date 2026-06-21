@@ -1,8 +1,11 @@
 ﻿using MISUP.BLL.Services;
+using MISUP.ConsoleApp.Dialogs; // Gọi AddProductDialog
 using MISUP.Models;
+using System;
 using System.Data;
 using System.Linq;
 using Terminal.Gui;
+using Attribute = Terminal.Gui.Attribute; // Định danh rõ Attribute của Terminal.Gui
 
 namespace MISUP.ConsoleApp.Views
 {
@@ -16,20 +19,54 @@ namespace MISUP.ConsoleApp.Views
         {
             _db = db;
 
-            var txtSearch = new TextField("") { X = 1, Y = 0, Width = 20 };
-            var btnTim = new Button("Tìm") { X = Pos.Right(txtSearch) + 1, Y = 0 };
-            var btnSortAsc = new Button("↑ Kho") { X = Pos.Right(btnTim) + 1, Y = 0 };
-            var btnSortDesc = new Button("↓ Kho") { X = Pos.Right(btnSortAsc) + 1, Y = 0 };
+            // ========================================================
+            // 1. TẠO HIỆU ỨNG MÀU CHO NÚT BẤM
+            // ========================================================
+            var actionBtnScheme = new ColorScheme()
+            {
+                Normal = new Attribute(Color.Cyan, Color.Black),          // Bình thường: Chữ xanh
+                Focus = new Attribute(Color.Black, Color.Cyan),           // Trỏ chuột vào: Nền xanh chữ đen
+                HotNormal = new Attribute(Color.BrightCyan, Color.Black),
+                HotFocus = new Attribute(Color.Black, Color.BrightCyan)
+            };
 
-            var btnThem = new Button("➕ Tạo SP") { X = Pos.Right(btnSortDesc) + 2, Y = 0 };
-            var btnSua = new Button("✏️ Sửa") { X = Pos.Right(btnThem) + 1, Y = 0 };
-            var btnXoa = new Button("🗑️ Xóa") { X = Pos.Right(btnSua) + 1, Y = 0 };
+            // ========================================================
+            // 2. KHỞI TẠO CÁC CONTROL
+            // ========================================================
+            // Dòng 1: Thanh công cụ Tìm kiếm và Lọc
+            var txtSearch = new TextField("") { X = 1, Y = 0, Width = 20, ColorScheme = ThemeManager.InputScheme };
+            var btnTim = new Button("Tìm") { X = Pos.Right(txtSearch) + 1, Y = 0, ColorScheme = actionBtnScheme };
 
-            _table = new TableView() { X = 0, Y = 2, Width = Dim.Fill(), Height = Dim.Fill(), FullRowSelect = true };
-            LoadData();
+            var lblLoai = new Label("Lọc loại:") { X = Pos.Right(btnTim) + 2, Y = 0 };
+            var cmbLoai = new ComboBox() { X = Pos.Right(lblLoai) + 1, Y = 0, Width = 15, Height = 6 };
+            cmbLoai.SetSource(new string[] { "Tất cả", "Thực Phẩm", "Điện Tử", "Mỹ Phẩm", "Gia Dụng", "Thời Trang" });
+            cmbLoai.SelectedItem = 0; // Mặc định là "Tất cả"
 
-            btnTim.Clicked += () => { LoadData(txtSearch.Text.ToString()); };
+            var btnSortAsc = new Button("↑ Kho") { X = Pos.Right(cmbLoai) + 2, Y = 0, ColorScheme = actionBtnScheme };
+            var btnSortDesc = new Button("↓ Kho") { X = Pos.Right(btnSortAsc) + 1, Y = 0, ColorScheme = actionBtnScheme };
 
+            // Dòng 2: Thanh công cụ Thao tác (Thêm, Sửa, Xóa)
+            var btnThem = new Button("➕ Tạo SP") { X = 1, Y = 2, ColorScheme = actionBtnScheme };
+            var btnSua = new Button("✏️ Sửa") { X = Pos.Right(btnThem) + 2, Y = 2, ColorScheme = actionBtnScheme };
+            var btnXoa = new Button("🗑️ Xóa") { X = Pos.Right(btnSua) + 2, Y = 2, ColorScheme = actionBtnScheme };
+
+            // Bảng dữ liệu
+            _table = new TableView() { X = 0, Y = 4, Width = Dim.Fill(), Height = Dim.Fill(), FullRowSelect = true };
+
+            Add(txtSearch, btnTim, lblLoai, cmbLoai, btnSortAsc, btnSortDesc, btnThem, btnSua, btnXoa, _table);
+            LoadData(); // Nạp dữ liệu lần đầu
+
+            // ========================================================
+            // 3. GẮN SỰ KIỆN CHO CÁC NÚT (EVENTS)
+            // ========================================================
+
+            // Tìm kiếm khi nhấn nút
+            btnTim.Clicked += () => { LoadData(txtSearch.Text.ToString(), GetSelectedLoai(cmbLoai.SelectedItem)); };
+
+            // Tự động lọc khi đổi Loại Sản Phẩm trong ComboBox
+            cmbLoai.SelectedItemChanged += (e) => { LoadData(txtSearch.Text.ToString(), GetSelectedLoai(cmbLoai.SelectedItem)); };
+
+            // Sắp xếp tăng giảm
             btnSortAsc.Clicked += () => {
                 if (_dtSource != null)
                 {
@@ -45,43 +82,94 @@ namespace MISUP.ConsoleApp.Views
                 }
             };
 
+            // THÊM SẢN PHẨM: Mở hộp thoại AddProductDialog (để null = thêm mới)
             btnThem.Clicked += () => {
-                MessageBox.Query("Tạo SP", "Mở hộp thoại tạo Sản phẩm mới...", "OK");
-                // Giả lập thêm
-                LoadData();
+                var dialog = new AddProductDialog(_db, null);
+                Application.Run(dialog);
+
+                // Nếu người dùng đã bấm "Lưu" trong Dialog, tải lại bảng
+                if (dialog.IsSaved) LoadData(txtSearch.Text.ToString(), GetSelectedLoai(cmbLoai.SelectedItem));
             };
 
+            // SỬA SẢN PHẨM: Lấy mã từ bảng và truyền vào Dialog
             btnSua.Clicked += () => {
-                if (_table.SelectedRow < 0) { MessageBox.ErrorQuery("Lỗi", "Chọn 1 sản phẩm để sửa!", "OK"); return; }
-                string ma = _table.Table.Rows[_table.SelectedRow][0].ToString();
-                MessageBox.Query("Sửa", $"Mở hộp thoại sửa cho mã: {ma}", "OK");
-            };
+                if (_table.SelectedRow < 0) { MessageBox.ErrorQuery("Lỗi", "Vui lòng chọn 1 sản phẩm ở bảng dưới để sửa!", "OK"); return; }
 
-            btnXoa.Clicked += () => {
-                if (_table.SelectedRow < 0) { MessageBox.ErrorQuery("Lỗi", "Chọn 1 sản phẩm để xóa!", "OK"); return; }
                 string ma = _table.Table.Rows[_table.SelectedRow][0].ToString();
-                if (MessageBox.Query("Xác nhận", $"Chắc chắn xóa sản phẩm {ma}?", "Có", "Không") == 0)
+                var sp = _db.LayDanhSach().FirstOrDefault(x => x.MaHang == ma); // Truy vấn lấy đối tượng
+
+                if (sp != null)
                 {
-                    _db.XoaHang(ma);
-                    LoadData();
+                    var dialog = new AddProductDialog(_db, sp);
+                    Application.Run(dialog);
+
+                    if (dialog.IsSaved) LoadData(txtSearch.Text.ToString(), GetSelectedLoai(cmbLoai.SelectedItem));
                 }
             };
 
-            Add(txtSearch, btnTim, btnSortAsc, btnSortDesc, btnThem, btnSua, btnXoa, _table);
+            // XÓA SẢN PHẨM: Gọi tầng BLL để xóa
+            btnXoa.Clicked += () => {
+                if (_table.SelectedRow < 0) { MessageBox.ErrorQuery("Lỗi", "Vui lòng chọn 1 sản phẩm để xóa!", "OK"); return; }
+
+                string ma = _table.Table.Rows[_table.SelectedRow][0].ToString();
+                string ten = _table.Table.Rows[_table.SelectedRow][1].ToString();
+
+                if (MessageBox.Query("Xác nhận", $"Bạn có chắc chắn xóa vĩnh viễn sản phẩm '{ten}' ({ma})?", "Có", "Không") == 0)
+                {
+                    try
+                    {
+                        _db.XoaHang(ma);
+                        LoadData(txtSearch.Text.ToString(), GetSelectedLoai(cmbLoai.SelectedItem)); // Load lại Data
+                        MessageBox.Query("Thành công", "Đã xóa sản phẩm khỏi hệ thống!", "OK");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.ErrorQuery("Lỗi CSDL", ex.Message, "OK");
+                    }
+                }
+            };
         }
 
-        private void LoadData(string keyword = "")
+        // Hàm ánh xạ từ Index ComboBox sang Code loại trong Database
+        private string GetSelectedLoai(int index)
+        {
+            return index switch
+            {
+                1 => "ThucPham",
+                2 => "DienTu",
+                3 => "MyPham",
+                4 => "GiaDung",
+                5 => "ThoiTrang",
+                _ => "" // 0: Tất cả
+            };
+        }
+
+        // Hàm tải dữ liệu kết hợp Lọc theo Loại và Từ khóa
+        private void LoadData(string keyword = "", string loai = "")
         {
             _dtSource = new DataTable();
-            _dtSource.Columns.Add("Mã Hàng"); _dtSource.Columns.Add("Tên SP");
-            _dtSource.Columns.Add("ĐVT"); _dtSource.Columns.Add("Tồn Kho", typeof(int)); // Kiểu int để sort
+            _dtSource.Columns.Add("Mã Hàng");
+            _dtSource.Columns.Add("Tên SP");
+            _dtSource.Columns.Add("ĐVT");
+            _dtSource.Columns.Add("Tồn Kho", typeof(int)); // Ép kiểu Int để Sắp xếp ASC/DESC được chuẩn xác
             _dtSource.Columns.Add("Giá Nhập");
 
-            var list = string.IsNullOrEmpty(keyword) ? _db.LayDanhSach() : _db.TimKiem(keyword);
+            // 1. Lọc theo Loại (Loại rỗng -> Lấy tất cả)
+            var list = string.IsNullOrEmpty(loai) ? _db.LayDanhSach() : _db.LocTheoLoai(loai);
+
+            // 2. Lọc tiếp theo Từ khóa Tìm kiếm
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                keyword = keyword.ToLower();
+                list = list.Where(x => x.TenHang.ToLower().Contains(keyword) || x.MaHang.ToLower().Contains(keyword)).ToList();
+            }
+
+            // 3. Đổ vào Data Table
             foreach (var h in list)
             {
                 _dtSource.Rows.Add(h.MaHang, h.TenHang, h.DonViTinh, h.SoLuongNhap, h.DonGia.ToString("N0"));
             }
+
             _table.Table = _dtSource;
             _table.Update();
         }
