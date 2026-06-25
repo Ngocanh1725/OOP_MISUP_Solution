@@ -1,271 +1,276 @@
-﻿using System;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Windows.Forms;
-using MISUP.WinForms.Forms;
-using MISUP.BLL.Services;
-
-namespace MISUP.WinForms
+﻿namespace MISUP.WinForms
 {
-    public partial class ucNhapHang : UserControl
+    partial class ucNhapHang
     {
-        private DataTable dtPhieuNhap;
-        private NhaCungCapBLL _nccBLL = new NhaCungCapBLL();
-        private ToolTip _toolTip = new ToolTip();
+        private System.ComponentModel.IContainer components = null;
 
-        public ucNhapHang()
+        private System.Windows.Forms.Panel pnlHeader;
+        private System.Windows.Forms.Label lblTitle;
+        private System.Windows.Forms.Button btnThem;
+        private System.Windows.Forms.Button btnSua;
+        private System.Windows.Forms.Button btnXoa;
+        private System.Windows.Forms.Button btnInPhieu;
+
+        private System.Windows.Forms.Panel pnlCard;
+        private System.Windows.Forms.Panel pnlToolbar;
+        private System.Windows.Forms.TextBox txtTimKiem;
+        private System.Windows.Forms.ComboBox cmbNhaCungCap; // Bổ sung biến này
+        private System.Windows.Forms.Button btnTim;
+        private System.Windows.Forms.ComboBox cmbTrangThai;
+
+        private System.Windows.Forms.DataGridView dgvData;
+
+        protected override void Dispose(bool disposing)
         {
-            InitializeComponent();
-            LoadNhaCungCapComboBox(); // Gọi Load CSDL vào ComboBox Filter
-            cmbTrangThai.SelectedIndex = 0;
-            AttachEvents();
-            LoadMockData();
-
-            SetRoundedRegion(pnlCard, 15);
+            if (disposing && (components != null)) components.Dispose();
+            base.Dispose(disposing);
         }
 
-        private void LoadNhaCungCapComboBox()
+        private void InitializeComponent()
         {
-            var items = new System.Collections.Generic.List<NhaCungCapItemPhieuNhap>();
-            items.Add(new NhaCungCapItemPhieuNhap { Text = "Tất cả NCC", Value = "" });
+            System.Windows.Forms.DataGridViewCellStyle headerStyle = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle cellStyle = new System.Windows.Forms.DataGridViewCellStyle();
 
-            try
-            {
-                var dsNCC = _nccBLL.LayDanhSach();
-                int maxWidth = cmbNhaCungCap.Width;
+            this.pnlHeader = new System.Windows.Forms.Panel();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.btnThem = new System.Windows.Forms.Button();
+            this.btnSua = new System.Windows.Forms.Button();
+            this.btnXoa = new System.Windows.Forms.Button();
+            this.btnInPhieu = new System.Windows.Forms.Button();
 
-                using (Graphics g = cmbNhaCungCap.CreateGraphics())
-                {
-                    foreach (var ncc in dsNCC)
-                    {
-                        string displayText = $"[{ncc.MaNCC}] {ncc.TenNCC}";
-                        items.Add(new NhaCungCapItemPhieuNhap { Text = displayText, Value = ncc.TenNCC });
+            this.pnlCard = new System.Windows.Forms.Panel();
+            this.pnlToolbar = new System.Windows.Forms.Panel();
+            this.btnTim = new System.Windows.Forms.Button();
+            this.cmbNhaCungCap = new System.Windows.Forms.ComboBox(); // Khởi tạo biến
+            this.cmbTrangThai = new System.Windows.Forms.ComboBox();
+            this.txtTimKiem = new System.Windows.Forms.TextBox();
+            this.dgvData = new System.Windows.Forms.DataGridView();
 
-                        int textWidth = (int)g.MeasureString(displayText, cmbNhaCungCap.Font).Width + SystemInformation.VerticalScrollBarWidth;
-                        if (textWidth > maxWidth) maxWidth = textWidth;
-                    }
-                }
+            this.pnlHeader.SuspendLayout();
+            this.pnlCard.SuspendLayout();
+            this.pnlToolbar.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
+            this.SuspendLayout();
 
-                cmbNhaCungCap.DataSource = items;
-                cmbNhaCungCap.DisplayMember = "Text";
-                cmbNhaCungCap.ValueMember = "Value";
-                cmbNhaCungCap.DropDownWidth = maxWidth;
+            // 
+            // pnlHeader
+            // 
+            this.pnlHeader.BackColor = System.Drawing.Color.Transparent;
+            this.pnlHeader.Controls.Add(this.btnInPhieu);
+            this.pnlHeader.Controls.Add(this.btnXoa);
+            this.pnlHeader.Controls.Add(this.btnSua);
+            this.pnlHeader.Controls.Add(this.btnThem);
+            this.pnlHeader.Controls.Add(this.lblTitle);
+            this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlHeader.Location = new System.Drawing.Point(20, 20);
+            this.pnlHeader.Name = "pnlHeader";
+            this.pnlHeader.Size = new System.Drawing.Size(1080, 60);
 
-                cmbNhaCungCap.SelectedIndexChanged += (s, e) => {
-                    if (cmbNhaCungCap.SelectedItem is NhaCungCapItemPhieuNhap item)
-                    {
-                        _toolTip.SetToolTip(cmbNhaCungCap, item.Text);
-                    }
-                };
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi tải danh sách NCC: " + ex.Message);
-            }
-        }
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(56)))), ((int)(((byte)(70)))));
+            this.lblTitle.Location = new System.Drawing.Point(0, 5);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Text = "Quản Lý Phiếu Nhập Kho";
 
-        private void SetRoundedRegion(Control control, int radius)
-        {
-            control.Resize += (s, e) =>
-            {
-                GraphicsPath path = new GraphicsPath();
-                path.AddArc(0, 0, radius, radius, 180, 90);
-                path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
-                path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90);
-                path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
-                path.CloseFigure();
-                control.Region = new Region(path);
-            };
-        }
+            // 
+            // btnThem
+            // 
+            this.btnThem.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnThem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(136)))), ((int)(((byte)(255)))));
+            this.btnThem.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnThem.FlatAppearance.BorderSize = 0;
+            this.btnThem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnThem.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnThem.ForeColor = System.Drawing.Color.White;
+            this.btnThem.Location = new System.Drawing.Point(920, 10);
+            this.btnThem.Name = "btnThem";
+            this.btnThem.Size = new System.Drawing.Size(160, 40);
+            this.btnThem.Text = "➕ Tạo phiếu";
 
-        private void AttachEvents()
-        {
-            txtTimKiem.Enter += (s, e) => { if (txtTimKiem.Text.Contains("Tìm")) { txtTimKiem.Text = ""; txtTimKiem.ForeColor = Color.Black; } };
-            txtTimKiem.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(txtTimKiem.Text)) { txtTimKiem.Text = "🔍 Tìm theo mã phiếu..."; txtTimKiem.ForeColor = Color.Gray; } };
+            // 
+            // btnSua
+            // 
+            this.btnSua.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSua.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(156)))), ((int)(((byte)(18)))));
+            this.btnSua.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSua.FlatAppearance.BorderSize = 0;
+            this.btnSua.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSua.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnSua.ForeColor = System.Drawing.Color.White;
+            this.btnSua.Location = new System.Drawing.Point(820, 10);
+            this.btnSua.Name = "btnSua";
+            this.btnSua.Size = new System.Drawing.Size(90, 40);
+            this.btnSua.Text = "✏️ Sửa";
 
-            btnTim.Click += BtnTim_Click;
-            btnThem.Click += BtnThem_Click;
-            btnSua.Click += BtnSua_Click;
-            btnXoa.Click += BtnXoa_Click;
-            btnInPhieu.Click += BtnInPhieu_Click;
+            // 
+            // btnXoa
+            // 
+            this.btnXoa.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnXoa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
+            this.btnXoa.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnXoa.FlatAppearance.BorderSize = 0;
+            this.btnXoa.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnXoa.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnXoa.ForeColor = System.Drawing.Color.White;
+            this.btnXoa.Location = new System.Drawing.Point(720, 10);
+            this.btnXoa.Name = "btnXoa";
+            this.btnXoa.Size = new System.Drawing.Size(90, 40);
+            this.btnXoa.Text = "🗑️ Xóa";
 
-            dgvData.CellPainting += DgvData_CellPainting;
-        }
+            // 
+            // btnInPhieu
+            // 
+            this.btnInPhieu.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 
-        private void LoadMockData()
-        {
-            dtPhieuNhap = new DataTable();
-            dtPhieuNhap.Columns.Add("MaPhieu");
-            dtPhieuNhap.Columns.Add("ThoiGian");
-            dtPhieuNhap.Columns.Add("NhaCungCap");
-            dtPhieuNhap.Columns.Add("ChiNhanh");
-            dtPhieuNhap.Columns.Add("TongTien");
-            dtPhieuNhap.Columns.Add("TrangThai");
+            // FIX LỆCH NÚT: Đổi màu nền thành xám nhạt và xóa BorderSize để đồng bộ chiều cao tuyệt đối với các nút còn lại
+            this.btnInPhieu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.btnInPhieu.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnInPhieu.FlatAppearance.BorderSize = 0;
+            this.btnInPhieu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnInPhieu.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnInPhieu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(56)))), ((int)(((byte)(70)))));
+            this.btnInPhieu.Location = new System.Drawing.Point(590, 10);
+            this.btnInPhieu.Name = "btnInPhieu";
+            this.btnInPhieu.Size = new System.Drawing.Size(120, 40);
+            this.btnInPhieu.Text = "🖨️ In mã vạch";
 
-            dtPhieuNhap.Rows.Add("PON0001", "20/06/2026 14:30", "Công ty CP Sữa Việt Nam", "Kho Tổng HN", "125,500,000", "Đã nhập kho");
-            dtPhieuNhap.Rows.Add("PON0002", "19/06/2026 09:15", "Samsung Electronics", "Kho Miền Nam", "450,000,000", "Đã nhập kho");
-            dtPhieuNhap.Rows.Add("PON0003", "21/06/2026 10:00", "Nhà Phân Phối Hà Nội", "Kho Tổng HN", "85,200,000", "Đang vận chuyển");
-            dtPhieuNhap.Rows.Add("PON0004", "18/06/2026 16:45", "Công ty Nhựa Chợ Lớn", "Kho Miền Trung", "12,000,000", "Đã hủy");
+            // 
+            // pnlCard
+            // 
+            this.pnlCard.BackColor = System.Drawing.Color.White;
+            this.pnlCard.Controls.Add(this.dgvData);
+            this.pnlCard.Controls.Add(this.pnlToolbar);
+            this.pnlCard.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlCard.Location = new System.Drawing.Point(20, 80);
+            this.pnlCard.Name = "pnlCard";
+            this.pnlCard.Padding = new System.Windows.Forms.Padding(5);
+            this.pnlCard.Size = new System.Drawing.Size(1080, 640);
 
-            dgvData.DataSource = dtPhieuNhap;
+            // 
+            // pnlToolbar
+            // 
+            this.pnlToolbar.BackColor = System.Drawing.Color.White;
+            this.pnlToolbar.Controls.Add(this.btnTim);
+            this.pnlToolbar.Controls.Add(this.cmbTrangThai);
+            this.pnlToolbar.Controls.Add(this.cmbNhaCungCap);
+            this.pnlToolbar.Controls.Add(this.txtTimKiem);
+            this.pnlToolbar.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlToolbar.Location = new System.Drawing.Point(5, 5);
+            this.pnlToolbar.Name = "pnlToolbar";
+            this.pnlToolbar.Size = new System.Drawing.Size(1070, 70);
 
-            dgvData.Columns["MaPhieu"].HeaderText = "Mã Phiếu";
-            dgvData.Columns["ThoiGian"].HeaderText = "Thời Gian";
-            dgvData.Columns["NhaCungCap"].HeaderText = "Nhà Cung Cấp";
-            dgvData.Columns["ChiNhanh"].HeaderText = "Chi Nhánh Nhận";
-            dgvData.Columns["TongTien"].HeaderText = "Tổng Tiền Nhập";
-            dgvData.Columns["TrangThai"].HeaderText = "Trạng Thái";
-            dgvData.Columns["NhaCungCap"].FillWeight = 200;
-        }
+            // 
+            // btnTim
+            // 
+            this.btnTim.BackColor = System.Drawing.Color.White;
+            this.btnTim.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnTim.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
+            this.btnTim.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnTim.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnTim.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(56)))), ((int)(((byte)(70)))));
+            this.btnTim.Location = new System.Drawing.Point(680, 18);
+            this.btnTim.Name = "btnTim";
+            this.btnTim.Size = new System.Drawing.Size(80, 36);
+            this.btnTim.Text = "Lọc";
 
-        private void BtnTim_Click(object sender, EventArgs e)
-        {
-            if (dtPhieuNhap == null) return;
-            string keyword = txtTimKiem.Text.Contains("Tìm") ? "" : txtTimKiem.Text.Trim();
+            // 
+            // cmbTrangThai
+            // 
+            this.cmbTrangThai.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbTrangThai.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.cmbTrangThai.Items.AddRange(new object[] {
+            "Tất cả trạng thái",
+            "Đã nhập kho",
+            "Đang vận chuyển",
+            "Đã hủy"});
+            this.cmbTrangThai.Location = new System.Drawing.Point(500, 20);
+            this.cmbTrangThai.Name = "cmbTrangThai";
+            this.cmbTrangThai.Size = new System.Drawing.Size(160, 33);
 
-            // Lấy tên NCC gốc từ ValueMember
-            string nccValue = "";
-            if (cmbNhaCungCap.SelectedItem is NhaCungCapItemPhieuNhap item)
-            {
-                nccValue = item.Value;
-            }
+            // 
+            // cmbNhaCungCap
+            // 
+            this.cmbNhaCungCap.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbNhaCungCap.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.cmbNhaCungCap.Location = new System.Drawing.Point(280, 20);
+            this.cmbNhaCungCap.Name = "cmbNhaCungCap";
+            this.cmbNhaCungCap.Size = new System.Drawing.Size(200, 33);
 
-            string trangThai = cmbTrangThai.SelectedIndex == 0 ? "" : cmbTrangThai.Text;
+            // 
+            // txtTimKiem
+            // 
+            this.txtTimKiem.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.txtTimKiem.ForeColor = System.Drawing.Color.Gray;
+            this.txtTimKiem.Location = new System.Drawing.Point(20, 20);
+            this.txtTimKiem.Name = "txtTimKiem";
+            this.txtTimKiem.Size = new System.Drawing.Size(240, 34);
+            this.txtTimKiem.Text = "🔍 Tìm theo mã phiếu...";
 
-            string filter = "1=1";
-            if (!string.IsNullOrEmpty(keyword)) filter += $" AND MaPhieu LIKE '%{keyword}%'";
-            if (!string.IsNullOrEmpty(nccValue)) filter += $" AND NhaCungCap = '{nccValue}'";
-            if (!string.IsNullOrEmpty(trangThai)) filter += $" AND TrangThai = '{trangThai}'";
+            // 
+            // dgvData
+            // 
+            this.dgvData.AllowUserToAddRows = false;
+            this.dgvData.AllowUserToDeleteRows = false;
+            this.dgvData.AllowUserToResizeColumns = false;
+            this.dgvData.AllowUserToResizeRows = false;
+            this.dgvData.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvData.BackgroundColor = System.Drawing.Color.White;
+            this.dgvData.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvData.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            this.dgvData.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
 
-            dtPhieuNhap.DefaultView.RowFilter = filter;
-        }
+            headerStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            headerStyle.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(251)))));
+            headerStyle.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            headerStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(99)))), ((int)(((byte)(115)))), ((int)(((byte)(129)))));
+            headerStyle.Padding = new System.Windows.Forms.Padding(15, 10, 10, 10);
+            headerStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(251)))));
 
-        private void BtnThem_Click(object sender, EventArgs e)
-        {
-            using (var dialog = new PhieuNhapDialog())
-            {
-                dialog.IsEditMode = false;
+            this.dgvData.ColumnHeadersDefaultCellStyle = headerStyle;
+            this.dgvData.ColumnHeadersHeight = 50;
+            this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    string newID = "PON" + (dtPhieuNhap.Rows.Count + 1).ToString("D4");
+            cellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            cellStyle.BackColor = System.Drawing.Color.White;
+            cellStyle.Font = new System.Drawing.Font("Segoe UI", 10F);
+            cellStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(43)))), ((int)(((byte)(54)))));
+            cellStyle.Padding = new System.Windows.Forms.Padding(15, 0, 10, 0);
+            cellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(248)))), ((int)(((byte)(255)))));
+            cellStyle.SelectionForeColor = System.Drawing.Color.Black;
 
-                    dtPhieuNhap.Rows.InsertAt(dtPhieuNhap.NewRow(), 0);
-                    dtPhieuNhap.Rows[0]["MaPhieu"] = newID;
-                    dtPhieuNhap.Rows[0]["ThoiGian"] = dialog.ThoiGian;
-                    dtPhieuNhap.Rows[0]["NhaCungCap"] = dialog.NhaCungCap;
-                    dtPhieuNhap.Rows[0]["ChiNhanh"] = dialog.ChiNhanh;
-                    dtPhieuNhap.Rows[0]["TongTien"] = dialog.TongTien;
-                    dtPhieuNhap.Rows[0]["TrangThai"] = dialog.TrangThai;
+            this.dgvData.DefaultCellStyle = cellStyle;
+            this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvData.EnableHeadersVisualStyles = false;
+            this.dgvData.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
+            this.dgvData.Location = new System.Drawing.Point(5, 75);
+            this.dgvData.ReadOnly = true;
+            this.dgvData.RowHeadersVisible = false;
+            this.dgvData.RowTemplate.Height = 50;
+            this.dgvData.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 
-                    MessageBox.Show($"Đã tạo Phiếu nhập mới: {newID}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-        }
+            // 
+            // ucNhapHang
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(246)))), ((int)(((byte)(248)))));
+            this.Controls.Add(this.pnlCard);
+            this.Controls.Add(this.pnlHeader);
+            this.Name = "ucNhapHang";
+            this.Padding = new System.Windows.Forms.Padding(20);
+            this.Size = new System.Drawing.Size(1120, 740);
 
-        private void BtnSua_Click(object sender, EventArgs e)
-        {
-            if (dgvData.SelectedRows.Count == 0)
-            {
-                MessageBox.Show("Vui lòng chọn 1 phiếu nhập ở bảng bên dưới để Sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var row = dgvData.SelectedRows[0];
-            string maPhieu = row.Cells["MaPhieu"].Value.ToString();
-
-            using (var dialog = new PhieuNhapDialog())
-            {
-                dialog.IsEditMode = true;
-                dialog.MaPhieu = maPhieu;
-                dialog.ThoiGian = row.Cells["ThoiGian"].Value.ToString();
-                dialog.NhaCungCap = row.Cells["NhaCungCap"].Value.ToString();
-                dialog.ChiNhanh = row.Cells["ChiNhanh"].Value.ToString();
-                dialog.TongTien = row.Cells["TongTien"].Value.ToString();
-                dialog.TrangThai = row.Cells["TrangThai"].Value.ToString();
-
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    DataRow[] dr = dtPhieuNhap.Select($"MaPhieu = '{maPhieu}'");
-                    if (dr.Length > 0)
-                    {
-                        dr[0]["ThoiGian"] = dialog.ThoiGian;
-                        dr[0]["NhaCungCap"] = dialog.NhaCungCap;
-                        dr[0]["ChiNhanh"] = dialog.ChiNhanh;
-                        dr[0]["TongTien"] = dialog.TongTien;
-                        dr[0]["TrangThai"] = dialog.TrangThai;
-                    }
-                    MessageBox.Show($"Đã cập nhật thay đổi cho Phiếu: {maPhieu}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-        }
-
-        private void BtnXoa_Click(object sender, EventArgs e)
-        {
-            if (dgvData.SelectedRows.Count == 0)
-            {
-                MessageBox.Show("Vui lòng chọn 1 phiếu nhập ở bảng bên dưới để Xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string id = dgvData.SelectedRows[0].Cells["MaPhieu"].Value.ToString();
-
-            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa vĩnh viễn phiếu nhập '{id}' không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            {
-                DataRow[] dr = dtPhieuNhap.Select($"MaPhieu = '{id}'");
-                if (dr.Length > 0)
-                {
-                    dtPhieuNhap.Rows.Remove(dr[0]);
-                }
-                MessageBox.Show("Đã xóa phiếu thành công khỏi hệ thống!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void BtnInPhieu_Click(object sender, EventArgs e)
-        {
-            if (dgvData.SelectedRows.Count > 0)
-            {
-                string id = dgvData.SelectedRows[0].Cells["MaPhieu"].Value.ToString();
-                MessageBox.Show($"Đang kết nối máy in để in mã vạch cho phiếu {id}...", "In ấn", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("Vui lòng chọn 1 phiếu nhập để in mã vạch!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-        }
-
-        private void DgvData_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
-        {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvData.Columns["TrangThai"].Index && e.Value != null)
-            {
-                e.PaintBackground(e.CellBounds, true);
-                string text = e.Value.ToString();
-                Color bgColor = Color.White, textColor = Color.Black, borderColor = Color.Gray;
-
-                if (text == "Đã nhập kho") { bgColor = Color.FromArgb(237, 247, 237); textColor = Color.FromArgb(46, 125, 50); borderColor = Color.FromArgb(200, 230, 201); }
-                else if (text == "Đang vận chuyển") { bgColor = Color.FromArgb(232, 244, 253); textColor = Color.FromArgb(2, 136, 209); borderColor = Color.FromArgb(179, 229, 252); }
-                else if (text == "Đã hủy") { bgColor = Color.FromArgb(255, 235, 238); textColor = Color.FromArgb(211, 47, 47); borderColor = Color.FromArgb(255, 205, 210); }
-
-                Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias;
-                SizeF textSize = g.MeasureString(text, e.CellStyle.Font);
-                int badgeWidth = (int)textSize.Width + 20;
-                int badgeHeight = 26;
-                int x = e.CellBounds.Left + 15;
-                int y = e.CellBounds.Top + (e.CellBounds.Height - badgeHeight) / 2;
-
-                Rectangle badgeRect = new Rectangle(x, y, badgeWidth, badgeHeight);
-
-                using (GraphicsPath path = new GraphicsPath())
-                {
-                    int r = 12, d = r * 2;
-                    path.AddArc(badgeRect.X, badgeRect.Y, d, d, 180, 90); path.AddArc(badgeRect.Right - d, badgeRect.Y, d, d, 270, 90);
-                    path.AddArc(badgeRect.Right - d, badgeRect.Bottom - d, d, d, 0, 90); path.AddArc(badgeRect.X, badgeRect.Bottom - d, d, d, 90, 90); path.CloseFigure();
-                    g.FillPath(new SolidBrush(bgColor), path); g.DrawPath(new Pen(borderColor), path);
-                }
-                TextRenderer.DrawText(g, text, new Font("Segoe UI", 9, FontStyle.Bold), badgeRect, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                e.Handled = true;
-            }
+            this.pnlHeader.ResumeLayout(false);
+            this.pnlHeader.PerformLayout();
+            this.pnlCard.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();
+            this.pnlToolbar.ResumeLayout(false);
+            this.pnlToolbar.PerformLayout();
+            this.ResumeLayout(false);
         }
     }
 }
