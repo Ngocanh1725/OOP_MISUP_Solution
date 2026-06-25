@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MISUP.Models
 {
     // LỚP CHA (Trừu tượng) - Đã được dọn dẹp sạch sẽ, không chứa các lớp con
-    public abstract class HangHoa
+    public abstract class HangHoa //=> abstract class: không thể khởi tạo trực tiếp, chỉ dùng để kế thừa
     {
         private int _soLuongNhap;
         private decimal _donGia;
@@ -23,15 +23,17 @@ namespace MISUP.Models
 
         public string DonViTinh { get; set; } = "Cái";
 
-        public int SoLuongNhap
+        //em dùng biến public thì đó là lập trình thủ tục (C/C++) chứ không còn là Hướng đối tượng nữa
+        public int SoLuongNhap //mở ra 1 property (thuộc tính) để kiểm soát dữ liệu đầu vào, đây là cổng giao tiếp giữa người dùng và biến bị khóa
         {
-            get => _soLuongNhap;
+            get => _soLuongNhap; //Khi giao diện muốn xem số lượng nhập, nó sẽ gọi get để lấy giá trị của biến bị khóa _soLuongNhap
             set { if (value < 0) throw new ArgumentException("Số lượng không được âm!"); _soLuongNhap = value; }
+            // Khi giao diện muốn thay đổi số lượng nhập, nó sẽ gọi set để kiểm tra giá trị đầu vào, nếu hợp lệ thì gán cho biến bị khóa _soLuongNhap
         }
-
+        // value là từ khóa đại diện cho giá trị mà người dùng muốn gán cho thuộc tính SoLuongNhap, nó được truyền vào từ bên ngoài khi gọi set
         public decimal DonGia
         {
-            get => _donGia;
+            get => _donGia;// Khi giao diện muốn xem đơn giá, nó sẽ gọi get để lấy giá trị của biến bị khóa _donGia
             set { if (value < 0) throw new ArgumentException("Đơn giá không được âm!"); _donGia = value; }
         }
 

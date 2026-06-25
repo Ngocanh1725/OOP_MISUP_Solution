@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MISUP.Models
 {
-    public class HangMyPham : HangHoa
+    public class HangMyPham : HangHoa //cú pháp của tính kế thừa     
     {
         public HangMyPham(string m, string mv, string t, string n, int s, decimal d, DateTime? hsd, int tmin)
             : base(m, mv, t, n, s, d, hsd, tmin) { }
