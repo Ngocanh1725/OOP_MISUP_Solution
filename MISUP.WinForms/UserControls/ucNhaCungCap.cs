@@ -1,20 +1,22 @@
 ﻿using System;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
+using MISUP.BLL.Services;
+using MISUP.WinForms.Forms;
 
 namespace MISUP.WinForms
 {
     public partial class ucNhaCungCap : UserControl
     {
-        private DataTable dt;
+        private NhaCungCapBLL _bll = new NhaCungCapBLL();
 
         public ucNhaCungCap()
         {
             InitializeComponent();
             AttachEvents();
-            LoadMockData();
+            LoadData(); // Gọi CSDL thật
 
             // Bo tròn thẻ pnlCard
             SetRoundedRegion(pnlCard, 15);
@@ -38,45 +40,94 @@ namespace MISUP.WinForms
 
             dgvData.CellPainting += DgvData_CellPainting;
 
-            // Xử lý Lọc
+            // Nút Tìm Kiếm
             btnTim.Click += (s, e) => {
                 string key = txtTimKiem.Text.Contains("Tìm") ? "" : txtTimKiem.Text.Trim();
-                if (dt != null) dt.DefaultView.RowFilter = $"TenNCC LIKE '%{key}%' OR DienThoai LIKE '%{key}%'";
+                LoadData(key);
             };
 
-            // Tạo mới (Giả lập)
+            // Nút Thêm Mới
             btnThem.Click += (s, e) => {
-                dt.Rows.InsertAt(dt.NewRow(), 0);
-                dt.Rows[0]["MaNCC"] = "NCC" + (dt.Rows.Count + 1).ToString("D3");
-                dt.Rows[0]["TenNCC"] = "Đối Tác Mới Thêm";
-                dt.Rows[0]["DienThoai"] = "0988xxx";
-                dt.Rows[0]["TongMua"] = "0";
-                dt.Rows[0]["CongNo"] = "0";
-                dt.Rows[0]["TrangThai"] = "Đang giao dịch";
-                MessageBox.Show("Đã thêm đối tác mới!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                using (var dialog = new NhaCungCapDialog())
+                {
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                        LoadData();
+                }
             };
 
-            btnXoa.Click += (s, e) => {
-                if (dgvData.SelectedRows.Count > 0 && MessageBox.Show("Bạn muốn xóa đối tác này?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            // Nút Sửa
+            btnSua.Click += (s, e) => {
+                if (dgvData.SelectedRows.Count == 0)
                 {
-                    dgvData.Rows.RemoveAt(dgvData.SelectedRows[0].Index);
+                    MessageBox.Show("Vui lòng chọn 1 nhà cung cấp trong bảng để sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string ma = dgvData.SelectedRows[0].Cells["MaNCC"].Value.ToString();
+                var ncc = _bll.LayDanhSach().FirstOrDefault(x => x.MaNCC == ma);
+
+                if (ncc != null)
+                {
+                    using (var dialog = new NhaCungCapDialog(ncc))
+                    {
+                        if (dialog.ShowDialog() == DialogResult.OK)
+                            LoadData();
+                    }
+                }
+            };
+
+            // Nút Xóa
+            btnXoa.Click += (s, e) => {
+                if (dgvData.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("Vui lòng chọn 1 nhà cung cấp trong bảng để xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string ma = dgvData.SelectedRows[0].Cells["MaNCC"].Value.ToString();
+                string ten = dgvData.SelectedRows[0].Cells["TenNCC"].Value.ToString();
+
+                if (MessageBox.Show($"Bạn có chắc chắn muốn xóa đối tác '{ten}' khỏi hệ thống?\nHành động này không thể hoàn tác!", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    try
+                    {
+                        _bll.XoaNCC(ma);
+                        MessageBox.Show("Xóa đối tác thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        LoadData();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi xóa dữ liệu: " + ex.Message, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             };
         }
 
-        private void LoadMockData()
+        private void LoadData(string keyword = "")
         {
-            dt = new DataTable();
-            dt.Columns.Add("MaNCC"); dt.Columns.Add("TenNCC"); dt.Columns.Add("DienThoai"); dt.Columns.Add("TongMua"); dt.Columns.Add("CongNo"); dt.Columns.Add("TrangThai");
+            var list = string.IsNullOrEmpty(keyword) ? _bll.LayDanhSach() : _bll.TimKiem(keyword);
 
-            dt.Rows.Add("NCC001", "Công ty CP Sữa Việt Nam", "1900 1568", "1,250,000,000", "0", "Đang giao dịch");
-            dt.Rows.Add("NCC002", "Samsung Electronics", "028 3821 1111", "5,450,000,000", "150,000,000", "Đang giao dịch");
-            dt.Rows.Add("NCC003", "Nhà Phân Phối Hà Nội", "0988 123 456", "320,000,000", "45,000,000", "Đang giao dịch");
-            dt.Rows.Add("NCC004", "Công ty Nhựa Chợ Lớn", "028 3855 2222", "85,000,000", "0", "Ngừng giao dịch");
+            var hienThi = list.Select(ncc => new {
+                MaNCC = ncc.MaNCC,
+                TenNCC = ncc.TenNCC,
+                DienThoai = ncc.DienThoai,
+                TongMua = ncc.TongMua.ToString("N0"),
+                CongNo = ncc.CongNo.ToString("N0"),
+                TrangThai = ncc.TrangThai
+            }).ToList();
 
-            dgvData.DataSource = dt;
-            dgvData.Columns["MaNCC"].HeaderText = "Mã Đối Tác"; dgvData.Columns["TenNCC"].HeaderText = "Tên Nhà Cung Cấp"; dgvData.Columns["DienThoai"].HeaderText = "Điện Thoại"; dgvData.Columns["TongMua"].HeaderText = "Tổng Nhập Hàng"; dgvData.Columns["CongNo"].HeaderText = "Công Nợ"; dgvData.Columns["TrangThai"].HeaderText = "Trạng Thái";
-            dgvData.Columns["TenNCC"].FillWeight = 200;
+            dgvData.DataSource = hienThi;
+
+            if (dgvData.Columns.Count > 0)
+            {
+                dgvData.Columns["MaNCC"].HeaderText = "Mã Đối Tác";
+                dgvData.Columns["TenNCC"].HeaderText = "Tên Nhà Cung Cấp";
+                dgvData.Columns["DienThoai"].HeaderText = "Điện Thoại";
+                dgvData.Columns["TongMua"].HeaderText = "Tổng Nhập Hàng";
+                dgvData.Columns["CongNo"].HeaderText = "Công Nợ";
+                dgvData.Columns["TrangThai"].HeaderText = "Trạng Thái";
+                dgvData.Columns["TenNCC"].FillWeight = 200;
+            }
         }
 
         private void DgvData_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
@@ -88,7 +139,7 @@ namespace MISUP.WinForms
                 Color bgColor = Color.White, textColor = Color.Black, borderColor = Color.Gray;
 
                 if (text == "Đang giao dịch") { bgColor = Color.FromArgb(237, 247, 237); textColor = Color.FromArgb(46, 125, 50); borderColor = Color.FromArgb(200, 230, 201); }
-                else if (text == "Ngừng giao dịch") { bgColor = Color.FromArgb(242, 242, 242); textColor = Color.FromArgb(97, 97, 97); borderColor = Color.FromArgb(224, 224, 224); }
+                else if (text == "Ngừng giao dịch" || text == "Ngừng GD") { bgColor = Color.FromArgb(242, 242, 242); textColor = Color.FromArgb(97, 97, 97); borderColor = Color.FromArgb(224, 224, 224); }
 
                 Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias;
                 SizeF textSize = g.MeasureString(text, e.CellStyle.Font);

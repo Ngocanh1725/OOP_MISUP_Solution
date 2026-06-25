@@ -20,12 +20,12 @@ namespace MISUP.ConsoleApp
         // Caching: Lưu lại các màn hình đã mở để không phải tạo lại (Chống giật lag)
         private Dictionary<int, View> _viewCache;
         private string[] _menuItems = new string[] {
-            " 🏠 Tổng Quan",
-            " 🏷️ Sản Phẩm",
-            " 🏢 Nhà Cung Cấp",
-            " 💳 Thanh Toán NCC",
-            " 📋 Kiểm Kê Kho",
-            " 📊 Báo Cáo"
+            " 1. Tổng Quan",
+            " 2. Sản Phẩm",
+            " 3. Nhà Cung Cấp",
+            " 4. Thanh Toán NCC",
+            " 5. Kiểm Kê Kho",
+            " 6. Báo Cáo"
         };
 
         // ==========================================
@@ -72,7 +72,7 @@ namespace MISUP.ConsoleApp
                     new MenuItem ("_Thông Tin", "", () => MessageBox.Query("Thông Tin", "MISUP ERP Console v2.0\nHệ thống Quản lý Vận hành Siêu thị", "OK")),
                     new MenuItem ("_Đăng Xuất", "Quay lại màn hình đăng nhập", () => Application.RequestStop())
                 }),
-                new MenuBarItem ($"_👤 {_user.HoTen} ({_user.Quyen})", new MenuItem [] {
+                new MenuBarItem ($"| {_user.HoTen} ({_user.Quyen})", new MenuItem [] {
                     new MenuItem ("_Quản lý Nhân Viên & Phân Quyền", "", () => {
                         // Chỉ cho phép Admin truy cập
                         if (_user.Quyen != "Admin")

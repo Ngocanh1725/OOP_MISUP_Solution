@@ -31,10 +31,23 @@ namespace MISUP.BLL.Services
             _dal.DoiMatKhau(username, newPass);
         }
 
+        public void SuaTaiKhoan(TaiKhoan tk)
+        {
+            if (string.IsNullOrWhiteSpace(tk.HoTen)) throw new Exception("Họ tên không được trống!");
+            if (tk.TenDangNhap.ToLower() == "admin" && tk.Quyen != "Admin") throw new Exception("Không thể thay đổi quyền của Admin gốc tại đây!");
+            _dal.Sua(tk);
+        }
+
         public void XoaTaiKhoan(string username)
         {
             if (username.ToLower() == "admin") throw new Exception("Không thể xóa tài khoản Admin gốc!");
             _dal.Xoa(username);
+        }
+
+        public void CapNhatQuyen(string username, string quyen)
+        {
+            if (username.ToLower() == "admin") throw new Exception("Không thể thay đổi quyền của Admin gốc!");
+            _dal.CapNhatQuyen(username, quyen);
         }
     }
 }

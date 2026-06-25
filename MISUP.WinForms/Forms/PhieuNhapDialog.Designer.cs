@@ -44,6 +44,7 @@
             // 
             this.lblTitle.AutoSize = true;
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(56)))), ((int)(((byte)(70)))));
             this.lblTitle.Location = new System.Drawing.Point(20, 20);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Text = "Tạo Phiếu Nhập Kho";
@@ -54,14 +55,14 @@
             this.lblThoiGian.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblThoiGian.Location = new System.Drawing.Point(20, 80);
             this.lblThoiGian.Name = "lblThoiGian";
-            this.lblThoiGian.Text = "Thời gian nhập";
+            this.lblThoiGian.Text = "Thời gian nhập:";
             // 
             // dtpThoiGian
             // 
             this.dtpThoiGian.CustomFormat = "dd/MM/yyyy HH:mm";
             this.dtpThoiGian.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.dtpThoiGian.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpThoiGian.Location = new System.Drawing.Point(20, 110);
+            this.dtpThoiGian.Location = new System.Drawing.Point(20, 105);
             this.dtpThoiGian.Name = "dtpThoiGian";
             this.dtpThoiGian.Size = new System.Drawing.Size(200, 32);
             // 
@@ -71,30 +72,24 @@
             this.lblNhaCungCap.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblNhaCungCap.Location = new System.Drawing.Point(240, 80);
             this.lblNhaCungCap.Name = "lblNhaCungCap";
-            this.lblNhaCungCap.Text = "Nhà cung cấp";
+            this.lblNhaCungCap.Text = "Nhà cung cấp:";
             // 
             // cmbNhaCungCap
             // 
             this.cmbNhaCungCap.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbNhaCungCap.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.cmbNhaCungCap.FormattingEnabled = true;
-            this.cmbNhaCungCap.Items.AddRange(new object[] {
-            "Công ty CP Vinamilk",
-            "Samsung Electronics",
-            "Tập đoàn Sunhouse",
-            "Nhà PP Hàng Tiêu Dùng",
-            "Công ty Thời Trang Yody"});
-            this.cmbNhaCungCap.Location = new System.Drawing.Point(240, 110);
+            this.cmbNhaCungCap.Location = new System.Drawing.Point(240, 105);
             this.cmbNhaCungCap.Name = "cmbNhaCungCap";
             this.cmbNhaCungCap.Size = new System.Drawing.Size(250, 33);
+            // Đã dọn dẹp sạch sẽ Item tĩnh
             // 
             // lblChiNhanh
             // 
             this.lblChiNhanh.AutoSize = true;
             this.lblChiNhanh.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblChiNhanh.Location = new System.Drawing.Point(20, 160);
+            this.lblChiNhanh.Location = new System.Drawing.Point(20, 150);
             this.lblChiNhanh.Name = "lblChiNhanh";
-            this.lblChiNhanh.Text = "Chi nhánh nhận";
+            this.lblChiNhanh.Text = "Chi nhánh nhận:";
             // 
             // cmbChiNhanh
             // 
@@ -105,7 +100,7 @@
             "Kho Tổng HN",
             "Kho Miền Trung",
             "Kho Miền Nam"});
-            this.cmbChiNhanh.Location = new System.Drawing.Point(20, 190);
+            this.cmbChiNhanh.Location = new System.Drawing.Point(20, 175);
             this.cmbChiNhanh.Name = "cmbChiNhanh";
             this.cmbChiNhanh.Size = new System.Drawing.Size(200, 33);
             // 
@@ -113,14 +108,14 @@
             // 
             this.lblTongTien.AutoSize = true;
             this.lblTongTien.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblTongTien.Location = new System.Drawing.Point(240, 160);
+            this.lblTongTien.Location = new System.Drawing.Point(240, 150);
             this.lblTongTien.Name = "lblTongTien";
-            this.lblTongTien.Text = "Tổng tiền (VNĐ)";
+            this.lblTongTien.Text = "Tổng tiền nhập (VNĐ):";
             // 
             // txtTongTien
             // 
             this.txtTongTien.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtTongTien.Location = new System.Drawing.Point(240, 190);
+            this.txtTongTien.Location = new System.Drawing.Point(240, 175);
             this.txtTongTien.Name = "txtTongTien";
             this.txtTongTien.Size = new System.Drawing.Size(250, 32);
             // 
@@ -128,9 +123,9 @@
             // 
             this.lblTrangThai.AutoSize = true;
             this.lblTrangThai.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.lblTrangThai.Location = new System.Drawing.Point(20, 240);
+            this.lblTrangThai.Location = new System.Drawing.Point(20, 220);
             this.lblTrangThai.Name = "lblTrangThai";
-            this.lblTrangThai.Text = "Trạng thái phiếu";
+            this.lblTrangThai.Text = "Trạng thái phiếu:";
             // 
             // cmbTrangThai
             // 
@@ -141,7 +136,7 @@
             "Đã nhập kho",
             "Đang vận chuyển",
             "Đã hủy"});
-            this.cmbTrangThai.Location = new System.Drawing.Point(20, 270);
+            this.cmbTrangThai.Location = new System.Drawing.Point(20, 245);
             this.cmbTrangThai.Name = "cmbTrangThai";
             this.cmbTrangThai.Size = new System.Drawing.Size(200, 33);
             // 
@@ -152,11 +147,12 @@
             this.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSave.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.btnSave.ForeColor = System.Drawing.Color.White;
-            this.btnSave.Location = new System.Drawing.Point(370, 330);
+            this.btnSave.Location = new System.Drawing.Point(370, 310);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(120, 40);
             this.btnSave.Text = "Lưu phiếu";
             this.btnSave.UseVisualStyleBackColor = false;
+            this.btnSave.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // btnCancel
@@ -165,17 +161,18 @@
             this.btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.LightGray;
             this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnCancel.Location = new System.Drawing.Point(260, 330);
+            this.btnCancel.Location = new System.Drawing.Point(260, 310);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(90, 40);
             this.btnCancel.Text = "Hủy";
             this.btnCancel.UseVisualStyleBackColor = false;
+            this.btnCancel.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // PhieuNhapDialog
             // 
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(520, 400);
+            this.ClientSize = new System.Drawing.Size(520, 380);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.cmbTrangThai);

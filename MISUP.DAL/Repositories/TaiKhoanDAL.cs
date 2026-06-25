@@ -46,12 +46,35 @@ namespace MISUP.DAL.Repositories
             }
         }
 
+        public void Sua(TaiKhoan tk)
+        {
+            using (var conn = new SqlConnection(DatabaseConnection.ConnectionString))
+            {
+                var cmd = new SqlCommand("UPDATE TaiKhoan SET HoTen=@ten, Quyen=@quyen WHERE TenDangNhap=@user", conn);
+                cmd.Parameters.AddWithValue("@user", tk.TenDangNhap);
+                cmd.Parameters.AddWithValue("@ten", tk.HoTen);
+                cmd.Parameters.AddWithValue("@quyen", tk.Quyen);
+                conn.Open(); cmd.ExecuteNonQuery();
+            }
+        }
+
         public void Xoa(string username)
         {
             using (var conn = new SqlConnection(DatabaseConnection.ConnectionString))
             {
                 var cmd = new SqlCommand("DELETE FROM TaiKhoan WHERE TenDangNhap=@user", conn);
                 cmd.Parameters.AddWithValue("@user", username);
+                conn.Open(); cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void CapNhatQuyen(string username, string quyen)
+        {
+            using (var conn = new SqlConnection(DatabaseConnection.ConnectionString))
+            {
+                var cmd = new SqlCommand("UPDATE TaiKhoan SET Quyen=@quyen WHERE TenDangNhap=@user", conn);
+                cmd.Parameters.AddWithValue("@user", username);
+                cmd.Parameters.AddWithValue("@quyen", quyen);
                 conn.Open(); cmd.ExecuteNonQuery();
             }
         }

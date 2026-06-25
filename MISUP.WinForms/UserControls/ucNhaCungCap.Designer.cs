@@ -83,7 +83,7 @@ namespace MISUP.WinForms
             this.pnlCard.Controls.Add(this.dgvData);
             this.pnlCard.Controls.Add(this.pnlToolbar);
 
-            // DataGridView
+            // DataGridView (KHÓA KÉO DÃN)
             this.dgvData.Dock = DockStyle.Fill; this.dgvData.BackgroundColor = Color.White; this.dgvData.BorderStyle = BorderStyle.None; this.dgvData.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal; this.dgvData.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             this.dgvData.AllowUserToResizeColumns = false; this.dgvData.AllowUserToResizeRows = false;
 

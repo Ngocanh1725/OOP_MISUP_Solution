@@ -201,6 +201,13 @@
             // dgvCanhBao
             // 
             this.dgvCanhBao.AllowUserToAddRows = false;
+            this.dgvCanhBao.AllowUserToDeleteRows = false;
+
+            // --- KHÓA KÉO DÃN LƯỚI CHO TỔNG QUAN ---
+            this.dgvCanhBao.AllowUserToResizeColumns = false;
+            this.dgvCanhBao.AllowUserToResizeRows = false;
+            this.dgvCanhBao.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+
             this.dgvCanhBao.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvCanhBao.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvCanhBao.BackgroundColor = System.Drawing.Color.White;

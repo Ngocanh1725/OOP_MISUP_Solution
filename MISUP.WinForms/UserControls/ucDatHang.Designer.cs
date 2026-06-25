@@ -42,6 +42,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvDonHang)).BeginInit();
             this.pnlToolbar.SuspendLayout();
             this.SuspendLayout();
+
             // 
             // pnlHeader
             // 
@@ -53,6 +54,7 @@
             this.pnlHeader.Location = new System.Drawing.Point(20, 20);
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Size = new System.Drawing.Size(1080, 60);
+
             // 
             // lblTitle
             // 
@@ -62,6 +64,7 @@
             this.lblTitle.Location = new System.Drawing.Point(0, 5);
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Text = "Quản Lý Đặt Hàng Nhập";
+
             // 
             // btnTaoDonHang
             // 
@@ -76,6 +79,7 @@
             this.btnTaoDonHang.Name = "btnTaoDonHang";
             this.btnTaoDonHang.Size = new System.Drawing.Size(160, 40);
             this.btnTaoDonHang.Text = "➕ Tạo đơn nhập";
+
             // 
             // btnXuatFile
             // 
@@ -90,6 +94,7 @@
             this.btnXuatFile.Name = "btnXuatFile";
             this.btnXuatFile.Size = new System.Drawing.Size(110, 40);
             this.btnXuatFile.Text = "📥 Xuất file";
+
             // 
             // pnlCard
             // 
@@ -101,11 +106,17 @@
             this.pnlCard.Name = "pnlCard";
             this.pnlCard.Padding = new System.Windows.Forms.Padding(5);
             this.pnlCard.Size = new System.Drawing.Size(1080, 640);
+
             // 
             // dgvDonHang
             // 
             this.dgvDonHang.AllowUserToAddRows = false;
             this.dgvDonHang.AllowUserToDeleteRows = false;
+
+            // Khóa tự do kéo dãn kích thước ô lưới
+            this.dgvDonHang.AllowUserToResizeColumns = false;
+            this.dgvDonHang.AllowUserToResizeRows = false;
+
             this.dgvDonHang.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvDonHang.BackgroundColor = System.Drawing.Color.White;
             this.dgvDonHang.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -120,6 +131,7 @@
             headerStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(251)))));
             this.dgvDonHang.ColumnHeadersDefaultCellStyle = headerStyle;
             this.dgvDonHang.ColumnHeadersHeight = 50;
+            this.dgvDonHang.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing; // Khóa kéo chiều cao header
             System.Windows.Forms.DataGridViewCellStyle cellStyle = new System.Windows.Forms.DataGridViewCellStyle();
             cellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             cellStyle.BackColor = System.Drawing.Color.White;
@@ -137,6 +149,7 @@
             this.dgvDonHang.RowHeadersVisible = false;
             this.dgvDonHang.RowTemplate.Height = 50;
             this.dgvDonHang.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+
             // 
             // pnlToolbar
             // 
@@ -149,6 +162,7 @@
             this.pnlToolbar.Location = new System.Drawing.Point(5, 5);
             this.pnlToolbar.Name = "pnlToolbar";
             this.pnlToolbar.Size = new System.Drawing.Size(1070, 70);
+
             // 
             // btnTim
             // 
@@ -162,6 +176,7 @@
             this.btnTim.Name = "btnTim";
             this.btnTim.Size = new System.Drawing.Size(100, 36);
             this.btnTim.Text = "Lọc";
+
             // 
             // cmbTrangThai
             // 
@@ -176,20 +191,17 @@
             this.cmbTrangThai.Location = new System.Drawing.Point(540, 20);
             this.cmbTrangThai.Name = "cmbTrangThai";
             this.cmbTrangThai.Size = new System.Drawing.Size(180, 33);
+
             // 
             // cmbNhaCungCap
             // 
             this.cmbNhaCungCap.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbNhaCungCap.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.cmbNhaCungCap.Items.AddRange(new object[] {
-            "Tất cả NCC",
-            "Công ty CP Acecook",
-            "Samsung Việt Nam",
-            "Nhà phân phối Unilever",
-            "Công ty TNHH Panasonic"});
             this.cmbNhaCungCap.Location = new System.Drawing.Point(340, 20);
             this.cmbNhaCungCap.Name = "cmbNhaCungCap";
             this.cmbNhaCungCap.Size = new System.Drawing.Size(180, 33);
+            // BỎ HOÀN TOÀN ITEMS TĨNH TẠI ĐÂY
+
             // 
             // txtTimKiem
             // 
@@ -199,6 +211,7 @@
             this.txtTimKiem.Name = "txtTimKiem";
             this.txtTimKiem.Size = new System.Drawing.Size(300, 34);
             this.txtTimKiem.Text = "🔍 Tìm mã đơn, tên NCC...";
+
             // 
             // ucDatHang
             // 

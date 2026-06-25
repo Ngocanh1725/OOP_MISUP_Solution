@@ -6,6 +6,7 @@
 
         private System.Windows.Forms.Panel pnlSidebar;
         private System.Windows.Forms.Label lblLogo;
+        private System.Windows.Forms.Label lblHeaderTitle;
         private System.Windows.Forms.Button btnBaoCao;
         private System.Windows.Forms.Button btnKiemKeKho;
         private System.Windows.Forms.Button btnThanhToanNCC;
@@ -24,7 +25,10 @@
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null)) { components.Dispose(); }
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
             base.Dispose(disposing);
         }
 
@@ -34,6 +38,7 @@
         {
             this.pnlSidebar = new System.Windows.Forms.Panel();
             this.lblLogo = new System.Windows.Forms.Label();
+            this.lblHeaderTitle = new System.Windows.Forms.Label();
             this.btnTongQuan = new System.Windows.Forms.Button();
             this.btnDatHang = new System.Windows.Forms.Button();
             this.btnNhapHang = new System.Windows.Forms.Button();
@@ -42,7 +47,6 @@
             this.btnThanhToanNCC = new System.Windows.Forms.Button();
             this.btnKiemKeKho = new System.Windows.Forms.Button();
             this.btnBaoCao = new System.Windows.Forms.Button();
-
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.pnlHeaderBorder = new System.Windows.Forms.Panel();
             this.btnUser = new System.Windows.Forms.Button();
@@ -71,7 +75,9 @@
             this.pnlSidebar.Name = "pnlSidebar";
             this.pnlSidebar.Size = new System.Drawing.Size(230, 800);
 
+            // 
             // lblLogo
+            // 
             this.lblLogo.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblLogo.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
             this.lblLogo.ForeColor = System.Drawing.Color.White;
@@ -81,7 +87,9 @@
             this.lblLogo.Text = "QUẢN LÝ\nNHẬP HÀNG";
             this.lblLogo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
-            // Tạo các nút (Dùng chung thuộc tính cơ bản)
+            // 
+            // Tạo tự động và cấu hình các nút Menu
+            // 
             System.Windows.Forms.Button[] menuButtons = { btnTongQuan, btnDatHang, btnNhapHang, btnSanPham, btnNhaCungCap, btnThanhToanNCC, btnKiemKeKho, btnBaoCao };
             string[] btnTexts = { "   🏠 Tổng quan", "   🛒 Đặt hàng", "   📥 Nhập hàng", "   🏷️ Sản phẩm", "   🏢 Nhà cung cấp", "   💳 Thanh toán NCC", "   📋 Kiểm kê kho", "   📊 Báo cáo" };
 
@@ -101,14 +109,17 @@
                 menuButtons[i].TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
                 menuButtons[i].Cursor = System.Windows.Forms.Cursors.Hand;
 
-                // Gắn sự kiện click chung
+                // Gắn sự kiện click
                 menuButtons[i].Click += new System.EventHandler(this.MenuButton_Click);
 
                 topPadding += 50;
             }
 
+            // 
             // pnlHeader
-            this.pnlHeader.BackColor = System.Drawing.Color.White;
+            // 
+            this.pnlHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(118)))), ((int)(((byte)(210))))); // Màu xanh hiện đại
+            this.pnlHeader.Controls.Add(this.lblHeaderTitle);
             this.pnlHeader.Controls.Add(this.btnLogout);
             this.pnlHeader.Controls.Add(this.btnUser);
             this.pnlHeader.Controls.Add(this.pnlHeaderBorder);
@@ -117,41 +128,65 @@
             this.pnlHeader.Name = "pnlHeader";
             this.pnlHeader.Size = new System.Drawing.Size(1120, 60);
 
-            // pnlHeaderBorder
-            this.pnlHeaderBorder.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(230)))), ((int)(((byte)(230)))));
-            this.pnlHeaderBorder.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlHeaderBorder.Height = 1;
+            //
+            // lblHeaderTitle
+            //
+            this.lblHeaderTitle.AutoSize = true;
+            this.lblHeaderTitle.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+            this.lblHeaderTitle.ForeColor = System.Drawing.Color.White;
+            this.lblHeaderTitle.Location = new System.Drawing.Point(20, 15);
+            this.lblHeaderTitle.Name = "lblHeaderTitle";
+            this.lblHeaderTitle.Text = "HỆ THỐNG QUẢN TRỊ VẬN HÀNH MISUP";
 
+            // 
+            // pnlHeaderBorder
+            // 
+            this.pnlHeaderBorder.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(21)))), ((int)(((byte)(101)))), ((int)(((byte)(192)))));
+            this.pnlHeaderBorder.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlHeaderBorder.Height = 2;
+
+            // 
             // btnUser
+            // 
             this.btnUser.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnUser.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(136)))), ((int)(((byte)(229)))));
             this.btnUser.FlatAppearance.BorderSize = 0;
             this.btnUser.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnUser.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this.btnUser.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
-            this.btnUser.Location = new System.Drawing.Point(670, 0);
+            this.btnUser.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnUser.ForeColor = System.Drawing.Color.White;
+            this.btnUser.Location = new System.Drawing.Point(740, 10);
             this.btnUser.Name = "btnUser";
-            this.btnUser.Size = new System.Drawing.Size(300, 60);
-            this.btnUser.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.btnUser.Size = new System.Drawing.Size(250, 40);
+            this.btnUser.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btnUser.Cursor = System.Windows.Forms.Cursors.Hand;
 
+            // 
             // btnLogout
+            // 
             this.btnLogout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLogout.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
             this.btnLogout.FlatAppearance.BorderSize = 0;
             this.btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnLogout.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(76)))), ((int)(((byte)(60)))));
-            this.btnLogout.Location = new System.Drawing.Point(980, 0);
+            this.btnLogout.ForeColor = System.Drawing.Color.White;
+            this.btnLogout.Location = new System.Drawing.Point(1000, 10);
             this.btnLogout.Name = "btnLogout";
-            this.btnLogout.Size = new System.Drawing.Size(100, 60);
+            this.btnLogout.Size = new System.Drawing.Size(100, 40);
             this.btnLogout.Text = "Đăng xuất";
+            this.btnLogout.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
 
+            // 
             // pnlContent
+            // 
             this.pnlContent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(246)))), ((int)(((byte)(248)))));
             this.pnlContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlContent.Location = new System.Drawing.Point(230, 60);
             this.pnlContent.Name = "pnlContent";
 
+            // 
             // MainForm
+            // 
             this.ClientSize = new System.Drawing.Size(1350, 800);
             this.Controls.Add(this.pnlContent);
             this.Controls.Add(this.pnlHeader);
