@@ -1,26 +1,20 @@
 ﻿using MISUP.BLL.Services;
 using MISUP.Models;
 using MISUP.WinForms.Utils;
-using MISUP.WinForms.Forms; // Dùng để gọi Form ChartDialog
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting; // Thư viện Chart
 
 namespace MISUP.WinForms
 {
     public partial class ucBaoCao : UserControl
     {
         private HangHoaBLL db = new HangHoaBLL();
-
-        // Lưu trữ danh sách đang được lọc để truyền sang biểu đồ
         private List<HangHoa> _currentList = new List<HangHoa>();
-        private string _currentMetric = "GiaTri"; // Hoặc "SoLuong"
-        private string _currentTitle = "";
 
         public ucBaoCao()
         {
@@ -31,10 +25,7 @@ namespace MISUP.WinForms
             cmbLoaiBaoCao.SelectedIndexChanged += (s, e) => LoadReport();
             btnXuatExcel.Click += BtnXuatExcel_Click;
 
-            // Gắn sự kiện bật biểu đồ
-            btnXemBieuDo.Click += BtnXemBieuDo_Click;
-
-            LoadReport(); // Mặc định chạy lần đầu
+            LoadReport();
         }
 
         private void SetRoundedRegion(Control control, int radius)
@@ -54,6 +45,8 @@ namespace MISUP.WinForms
             lblThongKe2.Text = db.TinhTongGiaTriKho().ToString("N0") + " đ";
             lblThongKe3.Text = db.TinhTongTonKhoThucTe().ToString("N0") + " cái";
 
+            string metric = "SoLuong";
+
             if (cmbLoaiBaoCao.SelectedIndex == 0) // Tồn kho hiện tại
             {
                 _currentList = db.LayDanhSach().OrderByDescending(x => x.TinhTongGiaTriSauThue()).ToList();
@@ -64,11 +57,9 @@ namespace MISUP.WinForms
                     Kho = h.SoLuongNhap,
                     GiaTri = h.TinhTongGiaTriSauThue().ToString("N0") + " đ"
                 }).ToList();
-
-                _currentTitle = "Top 10 Sản phẩm có Giá trị Kho cao nhất";
-                _currentMetric = "GiaTri";
+                metric = "GiaTri";
             }
-            else if (cmbLoaiBaoCao.SelectedIndex == 1) // Hàng sắp hết (< 10) hoăc theo TonKhoToiThieu
+            else if (cmbLoaiBaoCao.SelectedIndex == 1) // Hàng sắp hết (< 10)
             {
                 _currentList = db.LayHangSapHetTonKho();
                 dgvData.DataSource = _currentList.Select(h => new {
@@ -78,9 +69,6 @@ namespace MISUP.WinForms
                     MucCanhBao = h.TonKhoToiThieu,
                     TinhTrang = "Cần nhập gấp"
                 }).ToList();
-
-                _currentTitle = "Biểu đồ Các Sản phẩm Sắp hết hàng";
-                _currentMetric = "SoLuong";
             }
             else // Hàng Cận Date
             {
@@ -92,11 +80,14 @@ namespace MISUP.WinForms
                     HSD = h.HanSuDung.HasValue ? h.HanSuDung.Value.ToString("dd/MM/yyyy") : "-",
                     TinhTrang = "Cận Date"
                 }).ToList();
-
-                _currentTitle = "Số lượng Tồn của hàng Cận Date";
-                _currentMetric = "SoLuong";
             }
 
+            FormatGrid();
+            DrawChart(_currentList, metric); // Vẽ Biểu đồ
+        }
+
+        private void FormatGrid()
+        {
             if (dgvData.Columns.Count > 0)
             {
                 dgvData.Columns["MaHang"].HeaderText = "Mã Hàng";
@@ -107,22 +98,54 @@ namespace MISUP.WinForms
                 if (dgvData.Columns.Contains("MucCanhBao")) dgvData.Columns["MucCanhBao"].HeaderText = "Mức Cảnh Báo";
                 if (dgvData.Columns.Contains("TinhTrang")) dgvData.Columns["TinhTrang"].HeaderText = "Tình Trạng";
                 if (dgvData.Columns.Contains("HSD")) dgvData.Columns["HSD"].HeaderText = "Hạn Sử Dụng";
+
+                dgvData.Columns["TenHang"].FillWeight = 200;
             }
         }
 
-        private void BtnXemBieuDo_Click(object sender, EventArgs e)
+        // ==========================================
+        // NHÚNG BIỂU ĐỒ TRỰC TIẾP VÀO GIAO DIỆN
+        // ==========================================
+        private void DrawChart(List<HangHoa> data, string metric)
         {
-            if (_currentList == null || _currentList.Count == 0)
+            chartThongKe.Series.Clear();
+
+            Series series = new Series();
+            series.ChartType = SeriesChartType.Column;
+            series.IsValueShownAsLabel = false; // Tắt label để trông gọn giống Image 2
+
+            // Lấy 15 sản phẩm đầu tiên để biểu đồ không bị ép chặt
+            var topData = data.Take(15).ToList();
+
+            foreach (var item in topData)
             {
-                MessageBox.Show("Không có dữ liệu nào để vẽ biểu đồ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
+                string name = item.TenHang.Length > 10 ? item.TenHang.Substring(0, 10) + ".." : item.TenHang;
+
+                int pointIndex;
+                if (metric == "GiaTri")
+                {
+                    series.Name = "Giá Trị (VNĐ)";
+                    pointIndex = series.Points.AddXY(name, item.TinhTongGiaTriSauThue());
+                }
+                else
+                {
+                    series.Name = "Số Lượng (SP)";
+                    pointIndex = series.Points.AddXY(name, item.SoLuongNhap);
+                }
+
+                // Custom Color Palette: Cột màu Light Blue, nhưng nếu là cột cao nhất thì tô màu Vàng (Giống Image 2)
+                DataPoint pt = series.Points[pointIndex];
+                pt.Color = Color.FromArgb(178, 235, 242); // Màu xanh dương nhạt #B2EBF2
             }
 
-            // Gọi cửa sổ Popup chứa Biểu đồ lên
-            using (var dialog = new ChartDialog(_currentList, _currentTitle, _currentMetric))
+            if (series.Points.Count > 0)
             {
-                dialog.ShowDialog();
+                // Tìm cột có giá trị cao nhất và đổi thành màu Vàng rực rỡ
+                var maxPoint = series.Points.OrderByDescending(p => p.YValues[0]).First();
+                maxPoint.Color = Color.FromArgb(244, 208, 63); // Màu vàng Gold #F4D03F
             }
+
+            chartThongKe.Series.Add(series);
         }
 
         private void BtnXuatExcel_Click(object sender, EventArgs e)

@@ -124,7 +124,6 @@ namespace MISUP.WinForms
             if (dtPhieuNhap == null) return;
             string keyword = txtTimKiem.Text.Contains("Tìm") ? "" : txtTimKiem.Text.Trim();
 
-            // Lấy tên NCC gốc từ ValueMember
             string nccValue = "";
             if (cmbNhaCungCap.SelectedItem is NhaCungCapItemPhieuNhap item)
             {
@@ -134,7 +133,8 @@ namespace MISUP.WinForms
             string trangThai = cmbTrangThai.SelectedIndex == 0 ? "" : cmbTrangThai.Text;
 
             string filter = "1=1";
-            if (!string.IsNullOrEmpty(keyword)) filter += $" AND MaPhieu LIKE '%{keyword}%'";
+            // BỔ SUNG LỌC THEO CẢ NHÀ CUNG CẤP TRONG Ô TÌM KIẾM TEXT
+            if (!string.IsNullOrEmpty(keyword)) filter += $" AND (MaPhieu LIKE '%{keyword}%' OR NhaCungCap LIKE '%{keyword}%')";
             if (!string.IsNullOrEmpty(nccValue)) filter += $" AND NhaCungCap = '{nccValue}'";
             if (!string.IsNullOrEmpty(trangThai)) filter += $" AND TrangThai = '{trangThai}'";
 

@@ -170,6 +170,50 @@ namespace MISUP.WinForms
             }
         }
 
+        // --- BỔ SUNG NÚT SỬA ---
+        private void BtnSua_Click(object sender, EventArgs e)
+        {
+            if (dgvDonHang.SelectedRows.Count == 0) { MessageBox.Show("Vui lòng chọn 1 đơn hàng để Sửa!", "Cảnh báo"); return; }
+            var row = dgvDonHang.SelectedRows[0];
+            string maDon = row.Cells["MaDon"].Value.ToString();
+
+            using (var dialog = new PhieuDatHangDialog())
+            {
+                dialog.MaDon = maDon;
+                dialog.NgayTao = row.Cells["NgayTao"].Value.ToString();
+                dialog.NhaCungCap = row.Cells["NhaCungCap"].Value.ToString();
+                dialog.TongTien = row.Cells["TongTien"].Value.ToString();
+                dialog.TrangThai = row.Cells["TrangThai"].Value.ToString();
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    DataRow[] dr = dtDonHang.Select($"MaDon = '{maDon}'");
+                    if (dr.Length > 0)
+                    {
+                        dr[0]["NgayTao"] = dialog.NgayTao;
+                        dr[0]["NhaCungCap"] = dialog.NhaCungCap;
+                        dr[0]["TongTien"] = dialog.TongTien;
+                        dr[0]["TrangThai"] = dialog.TrangThai;
+                    }
+                    MessageBox.Show($"Đã cập nhật Đơn: {maDon}", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
+
+        // --- BỔ SUNG NÚT XÓA ---
+        private void BtnXoa_Click(object sender, EventArgs e)
+        {
+            if (dgvDonHang.SelectedRows.Count == 0) { MessageBox.Show("Vui lòng chọn 1 đơn hàng để Xóa!", "Cảnh báo"); return; }
+            string id = dgvDonHang.SelectedRows[0].Cells["MaDon"].Value.ToString();
+
+            if (MessageBox.Show($"Xóa vĩnh viễn đơn hàng '{id}'?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                DataRow[] dr = dtDonHang.Select($"MaDon = '{id}'");
+                if (dr.Length > 0) dtDonHang.Rows.Remove(dr[0]);
+                MessageBox.Show("Xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
         private void BtnXuatFile_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog() { Filter = "CSV File (*.csv)|*.csv", FileName = "DanhSachDatHang.csv" };

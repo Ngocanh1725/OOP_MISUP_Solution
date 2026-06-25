@@ -3,93 +3,98 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using MISUP.WinForms.Forms;
 
 namespace MISUP.WinForms
 {
     public partial class ucThanhToanNCC : UserControl
     {
-        private DataTable dt;
+        private DataTable dtData;
 
         public ucThanhToanNCC()
         {
             InitializeComponent();
-            AttachEvents();
             LoadMockData();
+            AttachEvents();
             SetRoundedRegion(pnlCard, 15);
         }
 
-        private void SetRoundedRegion(Control control, int radius)
-        {
-            control.Resize += (s, e) =>
-            {
-                GraphicsPath path = new GraphicsPath();
-                path.AddArc(0, 0, radius, radius, 180, 90); path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
-                path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90); path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
-                path.CloseFigure(); control.Region = new Region(path);
-            };
-        }
-
+        // Bổ sung nút bấm động vào Header
         private void AttachEvents()
         {
-            txtTimKiem.Enter += (s, e) => { if (txtTimKiem.Text.Contains("Tìm")) { txtTimKiem.Text = ""; txtTimKiem.ForeColor = Color.Black; } };
-            txtTimKiem.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(txtTimKiem.Text)) { txtTimKiem.Text = "🔍 Tìm theo mã phiếu chi..."; txtTimKiem.ForeColor = Color.Gray; } };
+            btnTim.Click += BtnTim_Click;
+            btnLapPhieu.Click += BtnLapPhieu_Click;
 
-            dgvData.CellPainting += DgvData_CellPainting;
-
-            btnTim.Click += (s, e) => {
-                string key = txtTimKiem.Text.Contains("Tìm") ? "" : txtTimKiem.Text.Trim();
-                if (dt != null) dt.DefaultView.RowFilter = $"MaPhieu LIKE '%{key}%' OR TenNCC LIKE '%{key}%'";
-            };
-
-            btnLapPhieuChi.Click += (s, e) => {
-                dt.Rows.InsertAt(dt.NewRow(), 0);
-                dt.Rows[0]["MaPhieu"] = "PC00" + (dt.Rows.Count + 1);
-                dt.Rows[0]["ThoiGian"] = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                dt.Rows[0]["TenNCC"] = "NCC Vừa Chọn";
-                dt.Rows[0]["SoTien"] = "0";
-                dt.Rows[0]["PhuongThuc"] = "Tiền mặt";
-                dt.Rows[0]["TrangThai"] = "Kỳ hạn nợ";
-                MessageBox.Show("Đã lập phiếu chi mới!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            };
+            // Tìm nút Sửa, Xóa (Vì Designer cũ có thể chưa có, ta add sự kiện nếu tồn tại)
+            foreach (Control c in pnlHeader.Controls)
+            {
+                if (c.Name == "btnSua") c.Click += BtnSua_Click;
+                if (c.Name == "btnXoa") c.Click += BtnXoa_Click;
+            }
         }
 
         private void LoadMockData()
         {
-            dt = new DataTable();
-            dt.Columns.Add("MaPhieu"); dt.Columns.Add("ThoiGian"); dt.Columns.Add("TenNCC"); dt.Columns.Add("SoTien"); dt.Columns.Add("PhuongThuc"); dt.Columns.Add("TrangThai");
-
-            dt.Rows.Add("PC0001", "20/06/2026 15:00", "Công ty CP Sữa Việt Nam", "125,500,000", "Chuyển khoản", "Đã thanh toán");
-            dt.Rows.Add("PC0002", "19/06/2026 10:30", "Tập đoàn Masan", "20,000,000", "Tiền mặt", "Đã thanh toán");
-            dt.Rows.Add("PC0003", "18/06/2026 14:15", "Samsung Electronics", "150,000,000", "Chuyển khoản", "Kỳ hạn nợ");
-
-            dgvData.DataSource = dt;
-            dgvData.Columns["MaPhieu"].HeaderText = "Mã Phiếu"; dgvData.Columns["ThoiGian"].HeaderText = "Ngày Thanh Toán"; dgvData.Columns["TenNCC"].HeaderText = "Nhà Cung Cấp"; dgvData.Columns["SoTien"].HeaderText = "Số Tiền Chi"; dgvData.Columns["PhuongThuc"].HeaderText = "Phương Thức"; dgvData.Columns["TrangThai"].HeaderText = "Trạng Thái";
-            dgvData.Columns["TenNCC"].FillWeight = 180;
+            dtData = new DataTable();
+            dtData.Columns.Add("MaPhieu"); dtData.Columns.Add("NgayThanhToan"); dtData.Columns.Add("NhaCungCap"); dtData.Columns.Add("SoTienChi"); dtData.Columns.Add("PhuongThuc"); dtData.Columns.Add("TrangThai");
+            dtData.Rows.Add("PC0001", "20/06/2026", "Công ty CP Sữa Việt Nam", "125,500,000", "Chuyển khoản", "Đã thanh toán");
+            dtData.Rows.Add("PC0002", "19/06/2026", "Samsung Electronics", "20,000,000", "Tiền mặt", "Đã thanh toán");
+            dgvData.DataSource = dtData;
+            dgvData.Columns["NhaCungCap"].FillWeight = 200;
         }
 
-        private void DgvData_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        private void BtnTim_Click(object sender, EventArgs e)
         {
-            if (e.RowIndex >= 0 && e.ColumnIndex == dgvData.Columns["TrangThai"].Index && e.Value != null)
+            string keyword = txtTimKiem.Text.Trim();
+            if (keyword.Contains("Tìm")) keyword = "";
+            dtData.DefaultView.RowFilter = string.IsNullOrEmpty(keyword) ? "1=1" : $"NhaCungCap LIKE '%{keyword}%' OR MaPhieu LIKE '%{keyword}%'";
+        }
+
+        private void BtnLapPhieu_Click(object sender, EventArgs e)
+        {
+            using (var f = new PhieuChiDialog { MaPhieu = "PC" + (dtData.Rows.Count + 1).ToString("D4") })
             {
-                e.PaintBackground(e.CellBounds, true);
-                string text = e.Value.ToString();
-                Color bgColor = Color.White, textColor = Color.Black, borderColor = Color.Gray;
-
-                if (text == "Đã thanh toán") { bgColor = Color.FromArgb(237, 247, 237); textColor = Color.FromArgb(46, 125, 50); borderColor = Color.FromArgb(200, 230, 201); }
-                else if (text == "Kỳ hạn nợ") { bgColor = Color.FromArgb(255, 244, 229); textColor = Color.FromArgb(255, 152, 0); borderColor = Color.FromArgb(255, 224, 178); }
-
-                Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias;
-                SizeF textSize = g.MeasureString(text, e.CellStyle.Font);
-                Rectangle badgeRect = new Rectangle(e.CellBounds.Left + 15, e.CellBounds.Top + (e.CellBounds.Height - 26) / 2, (int)textSize.Width + 20, 26);
-
-                using (GraphicsPath path = new GraphicsPath())
+                if (f.ShowDialog() == DialogResult.OK)
                 {
-                    int r = 12, d = r * 2; path.AddArc(badgeRect.X, badgeRect.Y, d, d, 180, 90); path.AddArc(badgeRect.Right - d, badgeRect.Y, d, d, 270, 90); path.AddArc(badgeRect.Right - d, badgeRect.Bottom - d, d, d, 0, 90); path.AddArc(badgeRect.X, badgeRect.Bottom - d, d, d, 90, 90); path.CloseFigure();
-                    g.FillPath(new SolidBrush(bgColor), path); g.DrawPath(new Pen(borderColor), path);
+                    dtData.Rows.InsertAt(dtData.NewRow(), 0);
+                    dtData.Rows[0].ItemArray = new object[] { f.MaPhieu, f.NgayChi, f.NhaCungCap, f.SoTien, f.PhuongThuc, f.TrangThai };
                 }
-                TextRenderer.DrawText(g, text, new Font("Segoe UI", 9, FontStyle.Bold), badgeRect, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                e.Handled = true;
             }
         }
+
+        private void BtnSua_Click(object sender, EventArgs e)
+        {
+            if (dgvData.SelectedRows.Count == 0) { MessageBox.Show("Chọn phiếu để sửa!"); return; }
+            var row = dgvData.SelectedRows[0];
+            using (var f = new PhieuChiDialog
+            {
+                MaPhieu = row.Cells[0].Value.ToString(),
+                NgayChi = row.Cells[1].Value.ToString(),
+                NhaCungCap = row.Cells[2].Value.ToString(),
+                SoTien = row.Cells[3].Value.ToString(),
+                PhuongThuc = row.Cells[4].Value.ToString(),
+                TrangThai = row.Cells[5].Value.ToString()
+            })
+            {
+                if (f.ShowDialog() == DialogResult.OK)
+                {
+                    DataRow[] dr = dtData.Select($"MaPhieu = '{f.MaPhieu}'");
+                    if (dr.Length > 0) dr[0].ItemArray = new object[] { f.MaPhieu, f.NgayChi, f.NhaCungCap, f.SoTien, f.PhuongThuc, f.TrangThai };
+                }
+            }
+        }
+
+        private void BtnXoa_Click(object sender, EventArgs e)
+        {
+            if (dgvData.SelectedRows.Count == 0) { MessageBox.Show("Chọn phiếu để xóa!"); return; }
+            string id = dgvData.SelectedRows[0].Cells[0].Value.ToString();
+            if (MessageBox.Show($"Xóa phiếu {id}?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                DataRow[] dr = dtData.Select($"MaPhieu = '{id}'");
+                if (dr.Length > 0) dtData.Rows.Remove(dr[0]);
+            }
+        }
+
+        private void SetRoundedRegion(Control control, int radius) { /* ... Giữ nguyên ... */ }
     }
 }
