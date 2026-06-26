@@ -1,198 +1,234 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
+using MISUP.BLL.Services;
 using MISUP.Models;
-using MISUP.Models.Entities;
-
-// Nếu bạn đã có NhaCungCapBLL, hãy using thư viện BLL ở đây
-// using MISUP.BLL.Services; 
+using MISUP.WinForms.Forms;
+using MISUP.WinForms.Utils;
 
 namespace MISUP.WinForms
 {
     public partial class ucSanPham : UserControl
     {
-        IQuanLyHangHoa db = new MISUP.DAL.Repositories.HangHoaDAL();
-        ComboBox cmbLocLoai;
-        Label lblThongKe;
+        private HangHoaBLL db = new HangHoaBLL();
+        private string currentTab = "";
+        private string currentSort = ""; // Cờ lưu trạng thái sắp xếp: "asc", "desc" hoặc ""
+        private Button[] tabButtons;
 
         public ucSanPham()
         {
             InitializeComponent();
+            dgvData.AllowUserToResizeColumns = false;
+            dgvData.AllowUserToResizeRows = false;
+            dgvData.AllowUserToOrderColumns = false;
+            tabButtons = new Button[] { btnTabTatCa, btnTabThucPham, btnTabDienTu, btnTabMyPham, btnTabGiaDung, btnTabThoiTrang };
+            AttachEvents();
+            LoadData();
+        }
 
-            Button btnThem = new Button() { Text = "Thêm", Left = 20, Top = 10, Width = 80, Height = 35, BackColor = Color.FromArgb(46, 204, 113), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
-            Button btnSua = new Button() { Text = "Sửa", Left = 110, Top = 10, Width = 80, Height = 35, BackColor = Color.FromArgb(243, 156, 18), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
-            Button btnXoa = new Button() { Text = "Xóa", Left = 200, Top = 10, Width = 80, Height = 35, BackColor = Color.FromArgb(231, 76, 60), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
-            Button btnRefresh = new Button() { Text = "Mới", Left = 290, Top = 10, Width = 70, Height = 35, BackColor = Color.Gray, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
-
-            cmbLocLoai = new ComboBox() { Left = 380, Top = 15, Width = 150, Font = new Font("Segoe UI", 11), DropDownStyle = ComboBoxStyle.DropDownList };
-            cmbLocLoai.Items.AddRange(new string[] { "Tất cả", "Thực Phẩm", "Điện Tử", "Mỹ Phẩm", "Gia Dụng", "Thời Trang" });
-            cmbLocLoai.SelectedIndex = 0;
-            cmbLocLoai.SelectedIndexChanged += (s, e) => LoadData("", cmbLocLoai.SelectedIndex == 0 ? "" : GetLoaiDbString(cmbLocLoai.SelectedItem.ToString()));
-
+        private void AttachEvents()
+        {
+            // Các nút chức năng
             btnThem.Click += (s, e) => ShowProductDialog(null);
             btnSua.Click += BtnSua_Click;
             btnXoa.Click += BtnXoa_Click;
-            btnRefresh.Click += (s, e) => { txtTimKiem.Clear(); cmbLocLoai.SelectedIndex = 0; LoadData(); };
+            btnXuatExcel.Click += (s, e) => ExportHelper.ExportToCSV(db.LayDanhSach());
 
-            pnlTop.Controls.AddRange(new Control[] { btnThem, btnSua, btnXoa, btnRefresh, cmbLocLoai });
+            // Tìm kiếm
+            txtTimKiem.Enter += (s, e) => { if (txtTimKiem.Text.Contains("Tìm kiếm")) { txtTimKiem.Text = ""; txtTimKiem.ForeColor = Color.Black; } };
+            txtTimKiem.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(txtTimKiem.Text)) { txtTimKiem.Text = "🔍 Tìm kiếm mã, tên"; txtTimKiem.ForeColor = Color.Gray; } };
 
-            Panel pnlBottom = new Panel() { Dock = DockStyle.Bottom, Height = 50, BackColor = Color.WhiteSmoke };
-            lblThongKe = new Label() { Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.FromArgb(41, 128, 185), AutoSize = true, Left = 20, Top = 12 };
-            pnlBottom.Controls.Add(lblThongKe);
-            this.Controls.Add(pnlBottom);
-        }
+            btnTim.Click += (s, e) => ReloadCurrentState();
+            txtTimKiem.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) ReloadCurrentState(); };
 
-        private void ucSanPham_Load(object sender, EventArgs e) => LoadData();
+            // Bắt sự kiện Sắp xếp Số lượng
+            btnSortAsc.Click += (s, e) => { currentSort = "asc"; ReloadCurrentState(); };
+            btnSortDesc.Click += (s, e) => { currentSort = "desc"; ReloadCurrentState(); };
 
-        private void LoadData(string keyword = "", string loai = "")
-        {
-            var list = string.IsNullOrEmpty(loai) ? db.LayDanhSach() : db.LocTheoLoai(loai);
-
-            if (!string.IsNullOrEmpty(keyword))
+            // Gắn sự kiện Click cho từng Tab phân loại
+            foreach (var btn in tabButtons)
             {
-                list = list.Where(x => x.TenHang.ToLower().Contains(keyword.ToLower()) ||
-                                     x.MaHang.ToLower().Contains(keyword.ToLower()) ||
-                                     x.NhaSanXuat.ToLower().Contains(keyword.ToLower())).ToList();
+                btn.Click += Tab_Click;
             }
 
+            dgvData.CellDoubleClick += DgvData_CellDoubleClick;
+            dgvData.CellPainting += DgvData_CellPainting;
+
+            // Vẽ viền cho Card
+            pnlCard.Paint += (s, e) => { ControlPaint.DrawBorder(e.Graphics, pnlCard.ClientRectangle, Color.FromArgb(226, 232, 240), ButtonBorderStyle.Solid); };
+        }
+
+        private void Tab_Click(object sender, EventArgs e)
+        {
+            Button clickedBtn = sender as Button;
+
+            foreach (var btn in tabButtons)
+            {
+                btn.ForeColor = Color.Gray;
+                btn.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            }
+
+            clickedBtn.ForeColor = Color.FromArgb(0, 136, 255);
+            clickedBtn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+
+            string t = clickedBtn.Text;
+            currentTab = t == "Tất cả" ? "" : GetLoaiDbString(t);
+            ReloadCurrentState();
+        }
+
+        private void ReloadCurrentState()
+        {
+            string keyword = txtTimKiem.Text.Replace("🔍 Tìm kiếm mã, tên", "").Trim();
+            LoadData(keyword, currentTab, currentSort);
+        }
+
+        private void LoadData(string keyword = "", string loai = "", string sort = "")
+        {
+            // 1. Lấy dữ liệu cơ bản (Có lọc Tab luôn)
+            var list = string.IsNullOrEmpty(loai) ? db.LayDanhSach() : db.LocTheoLoai(loai);
+
+            // 2. Lọc theo từ khóa (Tìm trong danh sách hiện tại bằng LINQ để không mất Tab)
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                list = list.Where(h => h.MaHang.ToLower().Contains(keyword.ToLower()) ||
+                                       h.TenHang.ToLower().Contains(keyword.ToLower()) ||
+                                       (!string.IsNullOrEmpty(h.MaVach) && h.MaVach.Contains(keyword))).ToList();
+            }
+
+            // 3. Xử lý Sắp xếp Tăng/Giảm theo Số lượng
+            if (sort == "asc") list = list.OrderBy(h => h.SoLuongNhap).ToList();
+            else if (sort == "desc") list = list.OrderByDescending(h => h.SoLuongNhap).ToList();
+
+            // 4. Đổ dữ liệu lên Grid
             dgvData.DataSource = list.Select(h => new {
                 MaHang = h.MaHang,
                 TenHang = h.TenHang,
-                NhaSanXuat = h.NhaSanXuat,
+                DVT = h.DonViTinh,
+                NhaCungCap = h.NhaSanXuat,
                 Kho = h.SoLuongNhap,
-                Gia = h.DonGia.ToString("N0") + " đ",
-                VAT = h.TinhThueVAT().ToString("N0") + " đ",
-                TongSauThue = h.TinhTongGiaTriSauThue().ToString("N0") + " đ",
-                Loai = GetLoaiViewString(h)
+                GiaNhap = h.DonGia.ToString("N0") + "đ",
+                TrangThaiTon = h.SoLuongNhap == 0 ? "Hết hàng" : (h.SoLuongNhap <= h.TonKhoToiThieu ? "Cần nhập" : "Ổn định"),
+                TrangThaiHSD = h.IsHetHan() ? "Đã hết hạn" : (h.IsSapHetHan(30) ? "Cận Date" : (h.HanSuDung.HasValue ? "Tốt" : "-"))
             }).ToList();
 
-            lblThongKe.Text = $"📊 TỔNG GIÁ TRỊ TỒN KHO: {db.TinhTongGiaTriKho():N0} VNĐ";
+            if (dgvData.Columns.Count > 0)
+            {
+                dgvData.Columns["MaHang"].HeaderText = "Mã hàng";
+                dgvData.Columns["TenHang"].HeaderText = "Tên sản phẩm";
+                dgvData.Columns["DVT"].HeaderText = "ĐVT";
+                dgvData.Columns["NhaCungCap"].HeaderText = "Nhà cung cấp";
+                dgvData.Columns["Kho"].HeaderText = "Tồn kho";
+                dgvData.Columns["GiaNhap"].HeaderText = "Giá nhập";
+                dgvData.Columns["TrangThaiTon"].HeaderText = "Trạng thái";
+                dgvData.Columns["TrangThaiHSD"].HeaderText = "Hạn sử dụng";
+
+                dgvData.Columns["TenHang"].FillWeight = 200;
+                dgvData.Columns["DVT"].FillWeight = 60;
+                dgvData.Columns["TrangThaiTon"].FillWeight = 110;
+                dgvData.Columns["TrangThaiHSD"].FillWeight = 110;
+            }
+
+            // 5. Cập nhật Dashboard Thống Kê
+            lblTongSP.Text = db.DemTongSoMatHang().ToString("N0");
+            lblTongGiaTri.Text = db.TinhTongGiaTriKho().ToString("N0") + " đ";
+            lblCanhBaoTon.Text = db.LayHangSapHetTonKho().Count.ToString() + " SP";
+        }
+
+        // Vẽ Huy hiệu (Badge) Bo tròn
+        private void DgvData_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.Value != null)
+            {
+                string colName = dgvData.Columns[e.ColumnIndex].Name;
+                if (colName == "TrangThaiTon" || colName == "TrangThaiHSD")
+                {
+                    e.PaintBackground(e.CellBounds, true);
+
+                    string text = e.Value.ToString();
+                    if (text == "-") { e.PaintContent(e.CellBounds); return; }
+
+                    Color bgColor, textColor, borderColor;
+
+                    if (text.Contains("Hết hàng") || text.Contains("Đã hết hạn"))
+                    {
+                        bgColor = Color.FromArgb(255, 235, 238); textColor = Color.FromArgb(211, 47, 47); borderColor = Color.FromArgb(255, 205, 210);
+                    }
+                    else if (text.Contains("Cần nhập") || text.Contains("Cận Date"))
+                    {
+                        bgColor = Color.FromArgb(255, 244, 229); textColor = Color.FromArgb(255, 152, 0); borderColor = Color.FromArgb(255, 224, 178);
+                    }
+                    else
+                    {
+                        bgColor = Color.FromArgb(237, 247, 237); textColor = Color.FromArgb(46, 125, 50); borderColor = Color.FromArgb(200, 230, 201);
+                    }
+
+                    Graphics g = e.Graphics;
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    SizeF textSize = g.MeasureString(text, e.CellStyle.Font);
+                    int badgeWidth = (int)textSize.Width + 20;
+                    int badgeHeight = 26;
+                    int x = e.CellBounds.Left + 15;
+                    int y = e.CellBounds.Top + (e.CellBounds.Height - badgeHeight) / 2;
+
+                    Rectangle badgeRect = new Rectangle(x, y, badgeWidth, badgeHeight);
+                    using (GraphicsPath path = GetRoundedRect(badgeRect, 13))
+                    {
+                        using (SolidBrush brush = new SolidBrush(bgColor)) g.FillPath(brush, path);
+                        using (Pen pen = new Pen(borderColor, 1)) g.DrawPath(pen, path);
+                    }
+
+                    TextRenderer.DrawText(g, text, new Font("Segoe UI", 9, FontStyle.Bold), badgeRect, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private GraphicsPath GetRoundedRect(Rectangle bounds, int radius)
+        {
+            int diameter = radius * 2; Size size = new Size(diameter, diameter); Rectangle arc = new Rectangle(bounds.Location, size);
+            GraphicsPath path = new GraphicsPath();
+            if (radius == 0) { path.AddRectangle(bounds); return path; }
+            path.AddArc(arc, 180, 90); arc.X = bounds.Right - diameter; path.AddArc(arc, 270, 90); arc.Y = bounds.Bottom - diameter;
+            path.AddArc(arc, 0, 90); arc.X = bounds.Left; path.AddArc(arc, 90, 90); path.CloseFigure();
+            return path;
         }
 
         private string GetLoaiDbString(string viewStr) => viewStr switch { "Thực Phẩm" => "ThucPham", "Điện Tử" => "DienTu", "Mỹ Phẩm" => "MyPham", "Gia Dụng" => "GiaDung", "Thời Trang" => "ThoiTrang", _ => "ThucPham" };
-        private string GetLoaiViewString(HangHoa h) => h switch { HangThucPham _ => "Thực Phẩm", HangDienTu _ => "Điện Tử", HangMyPham _ => "Mỹ Phẩm", HangGiaDung _ => "Gia Dụng", HangThoiTrang _ => "Thời Trang", _ => "Khác" };
-
-        private void btnTim_Click(object sender, EventArgs e) => LoadData(txtTimKiem.Text);
 
         private void BtnXoa_Click(object sender, EventArgs e)
         {
-            if (dgvData.SelectedRows.Count == 0) { MessageBox.Show("Vui lòng chọn một dòng để xóa!"); return; }
-            if (MessageBox.Show("Xác nhận xóa sản phẩm này?", "Cảnh báo", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (dgvData.SelectedRows.Count == 0) { MessageBox.Show("Vui lòng chọn 1 dòng!"); return; }
+            if (MessageBox.Show("Xóa sản phẩm này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                db.XoaHang(dgvData.SelectedRows[0].Cells["MaHang"].Value.ToString());
-                LoadData();
+                try { db.XoaHang(dgvData.SelectedRows[0].Cells["MaHang"].Value.ToString()); ReloadCurrentState(); } catch (Exception ex) { MessageBox.Show(ex.Message); }
             }
         }
 
         private void BtnSua_Click(object sender, EventArgs e)
         {
-            if (dgvData.SelectedRows.Count == 0) { MessageBox.Show("Vui lòng chọn một dòng để sửa!"); return; }
-
+            if (dgvData.SelectedRows.Count == 0) { MessageBox.Show("Vui lòng chọn 1 dòng để sửa!"); return; }
             string ma = dgvData.SelectedRows[0].Cells["MaHang"].Value.ToString();
-            string ten = dgvData.SelectedRows[0].Cells["TenHang"].Value.ToString();
-            string nsx = dgvData.SelectedRows[0].Cells["NhaSanXuat"].Value.ToString();
-            string loai = dgvData.SelectedRows[0].Cells["Loai"].Value.ToString();
-            int sl = Convert.ToInt32(dgvData.SelectedRows[0].Cells["Kho"].Value);
-            string giaRaw = dgvData.SelectedRows[0].Cells["Gia"].Value.ToString().Replace(" đ", "").Replace(",", "").Replace(".", "");
-            decimal gia = Convert.ToDecimal(giaRaw);
-
-            HangHoa sp = GetLoaiDbString(loai) switch
-            {
-                "ThucPham" => new HangThucPham(ma, ten, nsx, sl, gia),
-                "DienTu" => new HangDienTu(ma, ten, nsx, sl, gia),
-                "MyPham" => new HangMyPham(ma, ten, nsx, sl, gia),
-                "GiaDung" => new HangGiaDung(ma, ten, nsx, sl, gia),
-                "ThoiTrang" => new HangThoiTrang(ma, ten, nsx, sl, gia),
-                _ => null
-            };
-
-            ShowProductDialog(sp);
+            HangHoa sp = db.LayDanhSach().FirstOrDefault(x => x.MaHang == ma);
+            if (sp != null) ShowProductDialog(sp);
         }
 
-        // =================================================================================
-        // ĐÃ CẬP NHẬT LOGIC COMBOBOX NHÀ CUNG CẤP TỪ HÌNH ẢNH
-        // =================================================================================
+        private void DgvData_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                string ma = dgvData.Rows[e.RowIndex].Cells["MaHang"].Value.ToString();
+                HangHoa sp = db.LayDanhSach().FirstOrDefault(x => x.MaHang == ma);
+                if (sp != null) ShowProductDialog(sp);
+            }
+        }
+
         private void ShowProductDialog(HangHoa sp = null)
         {
-            bool isEdit = sp != null;
-            using (Form form = new Form() { Text = isEdit ? "Sửa Sản Phẩm" : "Thêm Mới Sản Phẩm", Size = new Size(420, 450), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false })
+            using (ProductDialog dialog = new ProductDialog(db, sp))
             {
-                TextBox txtMa = new TextBox() { Left = 120, Top = 40, Width = 250, Text = isEdit ? sp.MaHang : "", Enabled = !isEdit };
-                TextBox txtTen = new TextBox() { Left = 120, Top = 80, Width = 250, Text = isEdit ? sp.TenHang : "" };
-
-                // THAY THẾ TEXTBOX BẰNG COMBOBOX NHÀ CUNG CẤP
-                ComboBox cmbNhaCungCap = new ComboBox() { Left = 120, Top = 120, Width = 250, DropDownStyle = ComboBoxStyle.DropDown };
-
-                // TẢI DANH SÁCH NHÀ CUNG CẤP (Tương tự logic trong hình)
-                cmbNhaCungCap.Items.Clear();
-                try
-                {
-                    // NẾU BẠN CÓ FILE NhaCungCapBLL, HÃY MỞ COMMENT DÒNG DƯỚI ĐÂY:
-                    // var _nccBLL = new NhaCungCapBLL();
-                    // foreach (var ncc in _nccBLL.LayDanhSach()) { cmbNhaCungCap.Items.Add(ncc.TenNCC); }
-
-                    // Dữ liệu mẫu tạm thời để form không bị trống nếu chưa kết nối DB
-                    cmbNhaCungCap.Items.AddRange(new string[] { "Unilever", "P&G", "L'Oréal", "Sony", "Vinamilk" });
-                }
-                catch { /* Bỏ qua lỗi kết nối tạm thời */ }
-
-                if (isEdit) cmbNhaCungCap.Text = sp.NhaSanXuat;
-
-                TextBox txtSl = new TextBox() { Left = 120, Top = 160, Width = 250, Text = isEdit ? sp.SoLuongNhap.ToString() : "" };
-                TextBox txtGia = new TextBox() { Left = 120, Top = 200, Width = 250, Text = isEdit ? sp.DonGia.ToString() : "" };
-
-                ComboBox cmbLoai = new ComboBox() { Left = 120, Top = 240, Width = 250, DropDownStyle = ComboBoxStyle.DropDownList, Enabled = !isEdit };
-                cmbLoai.Items.AddRange(new string[] { "Thực Phẩm", "Điện Tử", "Mỹ Phẩm", "Gia Dụng", "Thời Trang" });
-                cmbLoai.SelectedIndex = isEdit ? cmbLoai.Items.IndexOf(GetLoaiViewString(sp)) : 0;
-
-                form.Controls.AddRange(new Control[] {
-                    new Label() { Text = "Mã hàng:", Left = 20, Top = 40 }, txtMa,
-                    new Label() { Text = "Tên SP:", Left = 20, Top = 80 }, txtTen,
-                    new Label() { Text = "Nhà C.Cấp:", Left = 20, Top = 120 }, cmbNhaCungCap, // Đã đổi tên Label và Control
-                    new Label() { Text = "Số lượng:", Left = 20, Top = 160 }, txtSl,
-                    new Label() { Text = "Đơn giá:", Left = 20, Top = 200 }, txtGia,
-                    new Label() { Text = "Loại hàng:", Left = 20, Top = 240 }, cmbLoai
-                });
-
-                Button btnSave = new Button() { Text = "Lưu Dữ Liệu", Left = 90, Top = 300, Width = 110, Height = 40, BackColor = Color.FromArgb(46, 204, 113), ForeColor = Color.White, Cursor = Cursors.Hand };
-                Button btnBack = new Button() { Text = "Quay lại", Left = 210, Top = 300, Width = 110, Height = 40, BackColor = Color.Gray, ForeColor = Color.White, Cursor = Cursors.Hand };
-
-                btnBack.Click += (s, ev) => form.Close();
-
-                btnSave.Click += (s, ev) => {
-                    try
-                    {
-                        if (string.IsNullOrEmpty(txtMa.Text) || string.IsNullOrEmpty(txtTen.Text)) throw new Exception("Vui lòng điền đủ Mã và Tên!");
-                        int sl = int.Parse(txtSl.Text);
-                        decimal gia = decimal.Parse(txtGia.Text);
-                        string l = GetLoaiDbString(cmbLoai.SelectedItem.ToString());
-
-                        // Lấy giá trị từ ComboBox Nhà Cung Cấp
-                        string ncc = cmbNhaCungCap.Text;
-
-                        HangHoa h = l switch
-                        {
-                            "ThucPham" => new HangThucPham(txtMa.Text, txtTen.Text, ncc, sl, gia),
-                            "DienTu" => new HangDienTu(txtMa.Text, txtTen.Text, ncc, sl, gia),
-                            "MyPham" => new HangMyPham(txtMa.Text, txtTen.Text, ncc, sl, gia),
-                            "GiaDung" => new HangGiaDung(txtMa.Text, txtTen.Text, ncc, sl, gia),
-                            "ThoiTrang" => new HangThoiTrang(txtMa.Text, txtTen.Text, ncc, sl, gia),
-                            _ => null
-                        };
-
-                        if (isEdit) db.SuaHang(h); else db.NhapHang(h, l);
-
-                        form.DialogResult = DialogResult.OK;
-                        form.Close();
-                    }
-                    catch (Exception ex) { MessageBox.Show("Lỗi nhập liệu: " + ex.Message, "Báo lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-                };
-
-                form.Controls.Add(btnSave);
-                form.Controls.Add(btnBack);
-
-                if (form.ShowDialog() == DialogResult.OK) LoadData();
+                if (dialog.ShowDialog() == DialogResult.OK) ReloadCurrentState();
             }
         }
     }

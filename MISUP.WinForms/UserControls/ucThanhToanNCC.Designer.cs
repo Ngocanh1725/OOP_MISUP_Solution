@@ -1,80 +1,181 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
-
-namespace MISUP.WinForms
+﻿namespace MISUP.WinForms
 {
     partial class ucThanhToanNCC
     {
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        private Panel pnlHeader;
-        private Label lblTitle;
-        private Panel pnlToolbar;
-        private Button btnLapPhieuChi;
-        private TextBox txtTimKiem;
-        private Button btnTim;
-        private Panel pnlCard;
-        private DataGridView dgvData;
-
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null)) components.Dispose();
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
             base.Dispose(disposing);
         }
 
+        #region Component Designer generated code
+
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle headerStyle = new DataGridViewCellStyle();
-            DataGridViewCellStyle cellStyle = new DataGridViewCellStyle();
-
-            this.pnlHeader = new Panel();
-            this.lblTitle = new Label();
-            this.pnlToolbar = new Panel();
-            this.btnLapPhieuChi = new Button();
-            this.txtTimKiem = new TextBox();
-            this.btnTim = new Button();
-            this.pnlCard = new Panel();
-            this.dgvData = new DataGridView();
-
-            this.pnlHeader.SuspendLayout();
-            this.pnlToolbar.SuspendLayout();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.pnlCard = new System.Windows.Forms.Panel();
+            this.dgvData = new System.Windows.Forms.DataGridView();
+            this.btnLapPhieu = new System.Windows.Forms.Button();
+            this.btnTim = new System.Windows.Forms.Button();
+            this.txtTimKiem = new System.Windows.Forms.TextBox();
+            this.lblTitle = new System.Windows.Forms.Label();
             this.pnlCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvData)).BeginInit();
             this.SuspendLayout();
 
-            // Header
-            this.pnlHeader.BackColor = Color.Transparent; this.pnlHeader.Controls.Add(this.lblTitle); this.pnlHeader.Dock = DockStyle.Top; this.pnlHeader.Height = 50;
-            this.lblTitle.AutoSize = true; this.lblTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold); this.lblTitle.ForeColor = Color.FromArgb(41, 56, 70); this.lblTitle.Location = new Point(0, 5); this.lblTitle.Text = "Quản Lý Công Nợ & Thanh Toán";
-
-            // Toolbar
-            this.pnlToolbar.BackColor = Color.White; this.pnlToolbar.Controls.Add(this.btnLapPhieuChi); this.pnlToolbar.Controls.Add(this.txtTimKiem); this.pnlToolbar.Controls.Add(this.btnTim); this.pnlToolbar.Dock = DockStyle.Top; this.pnlToolbar.Height = 70;
-
-            this.txtTimKiem.Font = new Font("Segoe UI", 11F); this.txtTimKiem.Size = new Size(300, 32); this.txtTimKiem.Location = new Point(15, 20); this.txtTimKiem.Text = "🔍 Tìm theo mã phiếu chi..."; this.txtTimKiem.ForeColor = Color.Gray;
-            this.btnTim.BackColor = Color.FromArgb(52, 152, 219); this.btnTim.ForeColor = Color.White; this.btnTim.FlatStyle = FlatStyle.Flat; this.btnTim.FlatAppearance.BorderSize = 0; this.btnTim.Font = new Font("Segoe UI", 10F, FontStyle.Bold); this.btnTim.Text = "Tìm"; this.btnTim.Size = new Size(70, 32); this.btnTim.Location = new Point(325, 20); this.btnTim.Cursor = Cursors.Hand;
-            this.btnLapPhieuChi.BackColor = Color.FromArgb(243, 156, 18); this.btnLapPhieuChi.ForeColor = Color.White; this.btnLapPhieuChi.FlatStyle = FlatStyle.Flat; this.btnLapPhieuChi.FlatAppearance.BorderSize = 0; this.btnLapPhieuChi.Font = new Font("Segoe UI", 10F, FontStyle.Bold); this.btnLapPhieuChi.Text = "💸 Lập phiếu chi"; this.btnLapPhieuChi.Size = new Size(150, 32); this.btnLapPhieuChi.Location = new Point(410, 20); this.btnLapPhieuChi.Cursor = Cursors.Hand;
-
-            // Card Panel
-            this.pnlCard.BackColor = Color.White;
-            this.pnlCard.Dock = DockStyle.Fill;
-            this.pnlCard.Padding = new Padding(2);
+            // 
+            // pnlCard
+            // 
+            this.pnlCard.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlCard.BackColor = System.Drawing.Color.White;
             this.pnlCard.Controls.Add(this.dgvData);
-            this.pnlCard.Controls.Add(this.pnlToolbar);
+            this.pnlCard.Location = new System.Drawing.Point(20, 80);
+            this.pnlCard.Name = "pnlCard";
+            this.pnlCard.Padding = new System.Windows.Forms.Padding(10);
+            this.pnlCard.Size = new System.Drawing.Size(960, 500);
+            this.pnlCard.TabIndex = 0;
 
-            // DataGridView
-            this.dgvData.Dock = DockStyle.Fill; this.dgvData.BackgroundColor = Color.White; this.dgvData.BorderStyle = BorderStyle.None; this.dgvData.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal; this.dgvData.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            this.dgvData.AllowUserToResizeColumns = false; this.dgvData.AllowUserToResizeRows = false;
+            // 
+            // dgvData
+            // 
+            this.dgvData.AllowUserToAddRows = false;
+            this.dgvData.AllowUserToDeleteRows = false;
+            this.dgvData.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvData.BackgroundColor = System.Drawing.Color.White;
+            this.dgvData.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgvData.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            this.dgvData.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvData.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvData.ColumnHeadersHeight = 40;
+            this.dgvData.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 10F);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(212)))), ((int)(((byte)(234)))), ((int)(((byte)(255)))));
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvData.DefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvData.EnableHeadersVisualStyles = false;
+            this.dgvData.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(230)))), ((int)(((byte)(230)))));
+            this.dgvData.Location = new System.Drawing.Point(10, 10);
+            this.dgvData.Name = "dgvData";
+            this.dgvData.ReadOnly = true;
+            this.dgvData.RowHeadersVisible = false;
+            this.dgvData.RowTemplate.Height = 40;
+            this.dgvData.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvData.Size = new System.Drawing.Size(940, 480);
+            this.dgvData.TabIndex = 0;
 
-            headerStyle.BackColor = Color.FromArgb(249, 250, 251); headerStyle.ForeColor = Color.FromArgb(99, 115, 129); headerStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold); headerStyle.SelectionBackColor = Color.FromArgb(249, 250, 251); headerStyle.Padding = new Padding(15, 10, 10, 10);
-            this.dgvData.ColumnHeadersDefaultCellStyle = headerStyle; this.dgvData.ColumnHeadersHeight = 50; this.dgvData.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            // 
+            // btnLapPhieu
+            // 
+            this.btnLapPhieu.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLapPhieu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(204)))), ((int)(((byte)(113)))));
+            this.btnLapPhieu.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnLapPhieu.FlatAppearance.BorderSize = 0;
+            this.btnLapPhieu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLapPhieu.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnLapPhieu.ForeColor = System.Drawing.Color.White;
+            this.btnLapPhieu.Location = new System.Drawing.Point(840, 20);
+            this.btnLapPhieu.Name = "btnLapPhieu";
+            this.btnLapPhieu.Size = new System.Drawing.Size(140, 40);
+            this.btnLapPhieu.TabIndex = 1;
+            this.btnLapPhieu.Text = "+ Lập Phiếu Chi";
+            this.btnLapPhieu.UseVisualStyleBackColor = false;
 
-            cellStyle.BackColor = Color.White; cellStyle.ForeColor = Color.FromArgb(33, 43, 54); cellStyle.Font = new Font("Segoe UI", 10F); cellStyle.SelectionBackColor = Color.FromArgb(240, 248, 255); cellStyle.SelectionForeColor = Color.Black; cellStyle.Padding = new Padding(15, 0, 10, 0);
-            this.dgvData.DefaultCellStyle = cellStyle; this.dgvData.EnableHeadersVisualStyles = false; this.dgvData.GridColor = Color.FromArgb(226, 232, 240); this.dgvData.ReadOnly = true; this.dgvData.RowHeadersVisible = false; this.dgvData.RowTemplate.Height = 50; this.dgvData.SelectionMode = DataGridViewSelectionMode.FullRowSelect; this.dgvData.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // 
+            // btnTim
+            // 
+            this.btnTim.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
+            this.btnTim.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnTim.FlatAppearance.BorderSize = 0;
+            this.btnTim.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnTim.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnTim.ForeColor = System.Drawing.Color.White;
+            this.btnTim.Location = new System.Drawing.Point(340, 20);
+            this.btnTim.Name = "btnTim";
+            this.btnTim.Size = new System.Drawing.Size(100, 40);
+            this.btnTim.TabIndex = 2;
+            this.btnTim.Text = "Tìm kiếm";
+            this.btnTim.UseVisualStyleBackColor = false;
+            // 
+            // txtTimKiem
+            // 
+            this.txtTimKiem.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.txtTimKiem.Location = new System.Drawing.Point(20, 26);
+            this.txtTimKiem.Name = "txtTimKiem";
+            this.txtTimKiem.Size = new System.Drawing.Size(300, 29);
+            this.txtTimKiem.TabIndex = 3;
 
-            this.AutoScaleDimensions = new SizeF(8F, 16F); this.AutoScaleMode = AutoScaleMode.Font; this.BackColor = Color.FromArgb(244, 246, 248);
-            this.Padding = new Padding(20);
-            this.Controls.Add(this.pnlCard); this.Controls.Add(this.pnlHeader); this.Name = "ucThanhToanNCC"; this.Size = new Size(1120, 740);
+            // 
+            // lblTitle
+            // 
+            this.lblTitle.AutoSize = true;
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.Location = new System.Drawing.Point(15, -2);
+            this.lblTitle.Name = "lblTitle";
+            this.lblTitle.Size = new System.Drawing.Size(252, 25);
+            this.lblTitle.TabIndex = 4;
+            this.lblTitle.Text = "Thanh Toán Nhà Cung Cấp";
+            this.lblTitle.Visible = false;
 
-            this.pnlHeader.ResumeLayout(false); this.pnlHeader.PerformLayout(); this.pnlToolbar.ResumeLayout(false); this.pnlToolbar.PerformLayout(); this.pnlCard.ResumeLayout(false); ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit(); this.ResumeLayout(false);
+            // 
+            // ucThanhToanNCC
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(242)))), ((int)(((byte)(245)))));
+            this.Controls.Add(this.lblTitle);
+            this.Controls.Add(this.txtTimKiem);
+            this.Controls.Add(this.btnTim);
+            this.Controls.Add(this.btnLapPhieu);
+            this.Controls.Add(this.pnlCard);
+            this.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Name = "ucThanhToanNCC";
+            this.Size = new System.Drawing.Size(1000, 600);
+            this.pnlCard.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvData)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
+
+        #endregion
+
+        private System.Windows.Forms.Panel pnlCard;
+        private System.Windows.Forms.DataGridView dgvData;
+        private System.Windows.Forms.Button btnLapPhieu; // <- Biến này được khai báo sẽ giải quyết lỗi CS0103
+        private System.Windows.Forms.Button btnTim;
+        private System.Windows.Forms.TextBox txtTimKiem;
+        private System.Windows.Forms.Label lblTitle;
     }
 }
